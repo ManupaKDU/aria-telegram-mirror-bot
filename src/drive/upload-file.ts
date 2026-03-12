@@ -67,7 +67,7 @@ function uploadChunk(filePath: string, chunk: Chunk, mimeType: string, uploadUrl
       let headers = response.headers;
       if (headers && headers.range) {
         let range: any = parseRange(headers.range);
-        if (range && range.last != chunk.bend) {
+        if (range && range.last !== chunk.bend) {
           // range is diff, need to return to recreate chunks
           return resolve(range);
         }
