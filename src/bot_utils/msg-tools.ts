@@ -112,12 +112,16 @@ export function notifyExternal(dlDetails: details.DlVars, successful: boolean, g
       if (filesize !== '0B') size = filesize;
     }
 
+    name = name === undefined ? null : name;
+    driveURL = driveURL === undefined ? null : driveURL;
+    size = size === undefined ? null : size;
+
     const data = JSON.stringify({
       successful: successful,
       file: {
-        name: name === undefined ? null : name,
-        driveURL: driveURL === undefined ? null : driveURL,
-        size: size === undefined ? null : size
+        name: name,
+        driveURL: driveURL,
+        size: size
       },
       originGroup: originGroup === undefined ? null : originGroup
     });
