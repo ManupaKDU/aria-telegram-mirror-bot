@@ -1,6 +1,6 @@
 import constants = require('../.constants');
 
-const TYPE_METADATA = 'Metadata';
+export const TYPE_METADATA = 'Metadata';
 
 interface FilePath {
   path: string,
