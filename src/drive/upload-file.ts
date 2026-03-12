@@ -81,9 +81,17 @@ function uploadChunk(filePath: string, chunk: Chunk, mimeType: string, uploadUrl
       try {
         body = JSON.parse(body);
       } catch (e) {
-        // TODO: So far `body` has been 1 liners here. If large `body` is noticed, change this
-        // to dump `body` to a file instead.
-        console.log(body);
+        if (body && body.length > 1000) {
+          let filename = 'upload-error-' + Date.now() + '.txt';
+          try {
+            fs.writeFileSync(filename, body.toString());
+            console.log(`Upload chunk returned large unparseable body. Dumped to ${filename}`);
+          } catch (err) {
+            console.log(`Failed to dump large unparseable body to file: ${err.message}`);
+          }
+        } else {
+          console.log(body);
+        }
         return resolve(null);
       }
       if (body && body.id) {
