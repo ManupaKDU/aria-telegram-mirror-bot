@@ -71,11 +71,13 @@ export class DlManager {
    * @param msg The download command message
    */
   getDownloadByMsgId(msg: TelegramBot.Message): dlDetails.DlVars {
-    for (var dl of Object.keys(this.allDls)) {
-      var download: dlDetails.DlVars = this.allDls[dl];
-      if (download.tgChatId === msg.chat.id &&
-        (download.tgMessageId === msg.message_id)) {
-        return download;
+    for (var dl in this.allDls) {
+      if (this.allDls.hasOwnProperty(dl)) {
+        var download: dlDetails.DlVars = this.allDls[dl];
+        if (download.tgChatId === msg.chat.id &&
+          (download.tgMessageId === msg.message_id)) {
+          return download;
+        }
       }
     }
     return null;
@@ -91,9 +93,11 @@ export class DlManager {
    * @param callback 
    */
   forEachDownload(callback: (dlDetails: dlDetails.DlVars) => void): void {
-    for (var key of Object.keys(this.allDls)) {
-      var details = this.allDls[key];
-      callback(details);
+    for (var key in this.allDls) {
+      if (this.allDls.hasOwnProperty(key)) {
+        var details = this.allDls[key];
+        callback(details);
+      }
     }
   }
 
@@ -122,8 +126,10 @@ export class DlManager {
    * @param callback 
    */
   forEachStatus(callback: (status: StatusAll) => void): void {
-    for (var key of Object.keys(this.statusAll)) {
-      callback(this.statusAll[key]);
+    for (var key in this.statusAll) {
+      if (this.statusAll.hasOwnProperty(key)) {
+        callback(this.statusAll[key]);
+      }
     }
   }
 
@@ -157,14 +163,18 @@ export class DlManager {
   }
 
   forEachCancelledDl(callback: (dlDetails: dlDetails.DlVars) => void): void {
-    for (var key of Object.keys(this.cancelledDls)) {
-      callback(this.cancelledDls[key]);
+    for (var key in this.cancelledDls) {
+      if (this.cancelledDls.hasOwnProperty(key)) {
+        callback(this.cancelledDls[key]);
+      }
     }
   }
 
   forEachCancelledChat(callback: (usernames: string[], tgChat: string) => void): void {
-    for (var key of Object.keys(this.cancelledMessages)) {
-      callback(this.cancelledMessages[key], key);
+    for (var key in this.cancelledMessages) {
+      if (this.cancelledMessages.hasOwnProperty(key)) {
+        callback(this.cancelledMessages[key], key);
+      }
     }
   }
 
