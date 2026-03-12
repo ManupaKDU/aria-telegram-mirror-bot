@@ -21,7 +21,7 @@
     "http-range-parse": "^1.0.0",
     "node-telegram-bot-api": "^0.30.0",
     "tar": "^4.4.4",
-    "typescript": "^3.5.3",
+    "typescript": "^3.9.10",
     "uuid": "^3.3.2"
   },
   "devDependencies": {

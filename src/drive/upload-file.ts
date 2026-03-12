@@ -19,8 +19,9 @@ interface Chunk {
    * Divide the file to multi path for upload
    * @returns {array} array of chunk info
    */
-function getChunks(filePath: string, start: number): Chunk[] {
-  var allsize = fs.statSync(filePath).size;
+async function getChunks(filePath: string, start: number): Promise<Chunk[]> {
+  var stat = await fs.promises.stat(filePath);
+  var allsize = stat.size;
   var sep = allsize < (20 * 1024 * 1024) ? allsize : (20 * 1024 * 1024) - 1;
   var ar = [];
   for (var i = start; i < allsize; i += sep) {
@@ -100,16 +101,20 @@ function uploadChunk(filePath: string, chunk: Chunk, mimeType: string, uploadUrl
 export function uploadGoogleDriveFile(dlDetails: DlVars, parent: string, file: { filePath: string; mimeType: string }): Promise<string> {
   var fileName = file.filePath.substring(file.filePath.lastIndexOf('/') + 1);
   return new Promise((resolve, reject) => {
-    var size = fs.statSync(file.filePath).size;
-    driveAuth.call((err, auth) => {
+    fs.stat(file.filePath, (err, stat) => {
       if (err) {
-        return reject(new Error('Failed to get OAuth client'));
+        return reject(err);
       }
-      auth.getAccessToken().then(tokenResponse => {
-        var token = tokenResponse.token;
-        var options = driveUtils.getPublicUrlRequestHeaders(size, file.mimeType, token, fileName, parent);
+      var size = stat.size;
+      driveAuth.call((err, auth) => {
+        if (err) {
+          return reject(new Error('Failed to get OAuth client'));
+        }
+        auth.getAccessToken().then(tokenResponse => {
+          var token = tokenResponse.token;
+          var options = driveUtils.getPublicUrlRequestHeaders(size, file.mimeType, token, fileName, parent);
 
-        request(options, async function (error: Error, response: request.Response) {
+          request(options, async function (error: Error, response: request.Response) {
           if (error) {
             return reject(error);
           }
@@ -122,7 +127,7 @@ export function uploadGoogleDriveFile(dlDetails: DlVars, parent: string, file: {
             return reject(new Error(`Get drive resumable url return invalid headers: ${JSON.stringify(response.headers, null, 2)}`));
           }
 
-          let chunks = getChunks(file.filePath, 0);
+          let chunks = await getChunks(file.filePath, 0);
           let fileId = null;
           try {
             let i = 0;
@@ -131,7 +136,7 @@ export function uploadGoogleDriveFile(dlDetails: DlVars, parent: string, file: {
               // last chunk will return the file id
               fileId = await uploadChunk(file.filePath, chunks[i], file.mimeType, response.headers.location);
               if ((typeof fileId === 'object') && (fileId !== null)) {
-                chunks = getChunks(file.filePath, fileId.last);
+                chunks = await getChunks(file.filePath, fileId.last);
                 i = 0;
                 dlDetails.uploadedBytes = dlDetails.uploadedBytes - lastUploadedBytes + fileId.last;
                 lastUploadedBytes = fileId.last;
@@ -156,6 +161,7 @@ export function uploadGoogleDriveFile(dlDetails: DlVars, parent: string, file: {
         console.log('Sending request to get resumable url: ' + err.message);
         return reject(err);
       });
+    });
     });
   });
 }
