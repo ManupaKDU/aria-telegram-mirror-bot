@@ -367,7 +367,9 @@ function updateAllStatus(): void {
         statusInterval = null;
         deleteAllStatus();
       }
-    }).catch();
+    }).catch(err => {
+      console.error(`updateAllStatus error: ${err ? err.message : err}`);
+    });
 }
 
 function deleteAllStatus(): void {
