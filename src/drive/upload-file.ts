@@ -27,7 +27,7 @@ function getChunks(filePath: string, start: number): Chunk[] {
     var bstart = i;
     var bend = i + sep - 1 < allsize ? i + sep - 1 : allsize - 1;
     var cr = 'bytes ' + bstart + '-' + bend + '/' + allsize;
-    var clen = bend != allsize - 1 ? sep : allsize - i;
+    var clen = bend !== allsize - 1 ? sep : allsize - i;
     var stime = allsize < (20 * 1024 * 1024) ? 5000 : 10000;
     ar.push({
       bstart: bstart,
