@@ -12,9 +12,6 @@ import dlUtils = require('../download_tools/utils');
  * @param {function} callback A function to call with an error, or a human-readable message
  */
 export function listFiles (fileName:string, callback:(err:string, message:string)=> void): void {
-  // Uncommenting the below line will prevent users from asking to list all files
-  // if (fileName === '' || fileName ==='*' || fileName === '%') return;
-
   driveAuth.call((err, auth) => {
     if (err) {
       callback(err, null);
