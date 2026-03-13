@@ -74,10 +74,10 @@ export function getSharableLink(fileId: string, isFolder: boolean,
 
 async function createPermissions(drive: drive_v3.Drive, fileId: string): Promise<any> {
   if (constants.DRIVE_FILE_PRIVATE && constants.DRIVE_FILE_PRIVATE.ENABLED) {
-    var req: GaxiosResponse<drive_v3.Schema$Permission>[] = [];
+    var req: Promise<GaxiosResponse<drive_v3.Schema$Permission>>[] = [];
 
     for (var email of constants.DRIVE_FILE_PRIVATE.EMAILS) {
-      var perm = await drive.permissions.create({
+      var perm = drive.permissions.create({
         fileId: fileId,
         supportsAllDrives: true,
         requestBody: {
