@@ -193,9 +193,13 @@ function formatNumber(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
+let filteredDomainsRegex: RegExp | null = null;
+if (constants.ARIA_FILTERED_DOMAINS && constants.ARIA_FILTERED_DOMAINS.length > 0) {
+  const escapedDomains = constants.ARIA_FILTERED_DOMAINS.map((d: string) => d.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  filteredDomainsRegex = new RegExp(escapedDomains.join('|'));
+}
+
 export function isDownloadAllowed(url: string): boolean {
-  for (var i = 0; i < constants.ARIA_FILTERED_DOMAINS.length; i++) {
-    if (url.indexOf(constants.ARIA_FILTERED_DOMAINS[i]) > -1) return false;
-  }
-  return true;
+  if (!filteredDomainsRegex) return true;
+  return !filteredDomainsRegex.test(url);
 }
