@@ -16,7 +16,6 @@ export function getPublicUrlRequestHeaders(size: number, mimeType: string, token
     },
     headers:
     {
-      'Postman-Token': '1d58fdd0-0408-45fa-a45d-fc703bff724a',
       'Cache-Control': 'no-cache',
       'X-Upload-Content-Length': size,
       'X-Upload-Content-Type': mimeType,
