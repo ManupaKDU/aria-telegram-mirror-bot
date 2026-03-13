@@ -105,8 +105,8 @@ export function isAdmin(bot: TelegramBot, msg: TelegramBot.Message, callback: (e
 export function notifyExternal(dlDetails: details.DlVars, successful: boolean, gid: string, originGroup: number, driveURL?: string): void {
   if (!constants.DOWNLOAD_NOTIFY_TARGET || !constants.DOWNLOAD_NOTIFY_TARGET.enabled) return;
   ariaTools.getStatus(dlDetails, (err, message, filename, filesize) => {
-    var name;
-    var size;
+    let name = null;
+    let size = null;
     if (!err) {
       if (filename !== 'Metadata') name = filename;
       if (filesize !== '0B') size = filesize;

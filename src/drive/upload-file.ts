@@ -19,15 +19,14 @@ interface Chunk {
    * Divide the file to multi path for upload
    * @returns {array} array of chunk info
    */
-function getChunks(filePath: string, start: number): Chunk[] {
-  var allsize = fs.statSync(filePath).size;
+function getChunks(filePath: string, start: number, allsize: number): Chunk[] {
   var sep = allsize < (20 * 1024 * 1024) ? allsize : (20 * 1024 * 1024) - 1;
   var ar = [];
   for (var i = start; i < allsize; i += sep) {
     var bstart = i;
     var bend = i + sep - 1 < allsize ? i + sep - 1 : allsize - 1;
     var cr = 'bytes ' + bstart + '-' + bend + '/' + allsize;
-    var clen = bend != allsize - 1 ? sep : allsize - i;
+    var clen = bend !== allsize - 1 ? sep : allsize - i;
     var stime = allsize < (20 * 1024 * 1024) ? 5000 : 10000;
     ar.push({
       bstart: bstart,
@@ -67,7 +66,7 @@ function uploadChunk(filePath: string, chunk: Chunk, mimeType: string, uploadUrl
       let headers = response.headers;
       if (headers && headers.range) {
         let range: any = parseRange(headers.range);
-        if (range && range.last != chunk.bend) {
+        if (range && range.last !== chunk.bend) {
           // range is diff, need to return to recreate chunks
           return resolve(range);
         }
@@ -81,9 +80,17 @@ function uploadChunk(filePath: string, chunk: Chunk, mimeType: string, uploadUrl
       try {
         body = JSON.parse(body);
       } catch (e) {
-        // TODO: So far `body` has been 1 liners here. If large `body` is noticed, change this
-        // to dump `body` to a file instead.
-        console.log(body);
+        if (body && body.length > 1000) {
+          let filename = 'upload-error-' + Date.now() + '.txt';
+          try {
+            fs.writeFileSync(filename, body.toString());
+            console.log(`Upload chunk returned large unparseable body. Dumped to ${filename}`);
+          } catch (err) {
+            console.log(`Failed to dump large unparseable body to file: ${err.message}`);
+          }
+        } else {
+          console.log(body);
+        }
         return resolve(null);
       }
       if (body && body.id) {
@@ -100,11 +107,15 @@ function uploadChunk(filePath: string, chunk: Chunk, mimeType: string, uploadUrl
 export function uploadGoogleDriveFile(dlDetails: DlVars, parent: string, file: { filePath: string; mimeType: string }): Promise<string> {
   var fileName = file.filePath.substring(file.filePath.lastIndexOf('/') + 1);
   return new Promise((resolve, reject) => {
-    var size = fs.statSync(file.filePath).size;
-    driveAuth.call((err, auth) => {
+    fs.stat(file.filePath, (err, stat) => {
       if (err) {
-        return reject(new Error('Failed to get OAuth client'));
+        return reject(err);
       }
+      var size = stat.size;
+      driveAuth.call((err, auth) => {
+        if (err) {
+          return reject(new Error('Failed to get OAuth client'));
+        }
       auth.getAccessToken().then(tokenResponse => {
         var token = tokenResponse.token;
         var options = driveUtils.getPublicUrlRequestHeaders(size, file.mimeType, token, fileName, parent);
@@ -122,7 +133,7 @@ export function uploadGoogleDriveFile(dlDetails: DlVars, parent: string, file: {
             return reject(new Error(`Get drive resumable url return invalid headers: ${JSON.stringify(response.headers, null, 2)}`));
           }
 
-          let chunks = getChunks(file.filePath, 0);
+          let chunks = getChunks(file.filePath, 0, size);
           let fileId = null;
           try {
             let i = 0;
@@ -131,7 +142,7 @@ export function uploadGoogleDriveFile(dlDetails: DlVars, parent: string, file: {
               // last chunk will return the file id
               fileId = await uploadChunk(file.filePath, chunks[i], file.mimeType, response.headers.location);
               if ((typeof fileId === 'object') && (fileId !== null)) {
-                chunks = getChunks(file.filePath, fileId.last);
+                chunks = getChunks(file.filePath, fileId.last, size);
                 i = 0;
                 dlDetails.uploadedBytes = dlDetails.uploadedBytes - lastUploadedBytes + fileId.last;
                 lastUploadedBytes = fileId.last;
@@ -156,6 +167,7 @@ export function uploadGoogleDriveFile(dlDetails: DlVars, parent: string, file: {
         console.log('Sending request to get resumable url: ' + err.message);
         return reject(err);
       });
+    });
     });
   });
 }
