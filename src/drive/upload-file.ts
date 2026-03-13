@@ -27,7 +27,7 @@ function getChunks(filePath: string, start: number): Chunk[] {
     var bstart = i;
     var bend = i + sep - 1 < allsize ? i + sep - 1 : allsize - 1;
     var cr = 'bytes ' + bstart + '-' + bend + '/' + allsize;
-    var clen = bend != allsize - 1 ? sep : allsize - i;
+    var clen = bend !== allsize - 1 ? sep : allsize - i;
     var stime = allsize < (20 * 1024 * 1024) ? 5000 : 10000;
     ar.push({
       bstart: bstart,
@@ -67,7 +67,7 @@ function uploadChunk(filePath: string, chunk: Chunk, mimeType: string, uploadUrl
       let headers = response.headers;
       if (headers && headers.range) {
         let range: any = parseRange(headers.range);
-        if (range && range.last != chunk.bend) {
+        if (range && range.last !== chunk.bend) {
           // range is diff, need to return to recreate chunks
           return resolve(range);
         }
@@ -81,9 +81,17 @@ function uploadChunk(filePath: string, chunk: Chunk, mimeType: string, uploadUrl
       try {
         body = JSON.parse(body);
       } catch (e) {
-        // TODO: So far `body` has been 1 liners here. If large `body` is noticed, change this
-        // to dump `body` to a file instead.
-        console.log(body);
+        if (body && body.length > 1000) {
+          let filename = 'upload-error-' + Date.now() + '.txt';
+          try {
+            fs.writeFileSync(filename, body.toString());
+            console.log(`Upload chunk returned large unparseable body. Dumped to ${filename}`);
+          } catch (err) {
+            console.log(`Failed to dump large unparseable body to file: ${err.message}`);
+          }
+        } else {
+          console.log(body);
+        }
         return resolve(null);
       }
       if (body && body.id) {
