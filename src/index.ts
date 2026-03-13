@@ -368,7 +368,7 @@ function updateAllStatus(): void {
         deleteAllStatus();
       }
     }).catch(err => {
-      console.error(`updateAllStatus error: ${err}`);
+      console.error(`updateAllStatus error: ${err ? err.message : err}`);
     });
 }
 
