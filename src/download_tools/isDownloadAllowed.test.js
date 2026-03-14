@@ -1,6 +1,6 @@
-const { isDownloadAllowed } = require('./utils');
+const { isDownloadAllowed } = require('@src/download_tools/utils');
 
-jest.mock('../.constants', () => ({
+jest.mock('@src/.constants', () => ({
   ARIA_FILTERED_DOMAINS: ['yts', 'YTS', 'cruzing.xyz', 'eztv.ag', 'YIFY'],
   ARIA_DOWNLOAD_LOCATION: '/downloads'
 }));
