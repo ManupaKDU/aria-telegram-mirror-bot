@@ -1,6 +1,7 @@
 module.exports = {
-  roots: ['<rootDir>/src'],
   moduleNameMapper: {
-    '^@src/(.*)$': '<rootDir>/out/$1',
-  }
+    '^@src/(.*)$': '<rootDir>/src/$1',
+  },
+  testEnvironment: 'node',
+  moduleDirectories: ['node_modules'],
 };
