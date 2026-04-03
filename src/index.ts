@@ -156,29 +156,16 @@ setEventCallback(eventRegex.commandsRegex.cancelAll, eventRegex.commandsRegexNoN
   var authorizedCode = msgTools.isAuthorized(msg, true);
   if (authorizedCode === 0) {
     // One of SUDO_USERS. Cancel all downloads
-    dlManager.forEachDownload(dlDetails => {
-      dlManager.addCancelled(dlDetails);
-    });
-    cancelMultipleMirrors(msg);
+    cancelAllDlInChat(msg, true);
 
   } else if (authorizedCode === 2) {
     // Chat admin, but not sudo. Cancel all downloads only from that chat.
-    dlManager.forEachDownload(dlDetails => {
-      if (msg.chat.id === dlDetails.tgChatId) {
-        dlManager.addCancelled(dlDetails);
-      }
-    });
-    cancelMultipleMirrors(msg);
+    cancelAllDlInChat(msg);
 
   } else if (authorizedCode === 3) {
     msgTools.isAdmin(bot, msg, (e, res) => {
       if (res) {
-        dlManager.forEachDownload(dlDetails => {
-          if (msg.chat.id === dlDetails.tgChatId) {
-            dlManager.addCancelled(dlDetails);
-          }
-        });
-        cancelMultipleMirrors(msg);
+        cancelAllDlInChat(msg);
       } else {
         msgTools.sendMessage(bot, msg, 'You do not have permission to do that.');
       }
@@ -187,6 +174,15 @@ setEventCallback(eventRegex.commandsRegex.cancelAll, eventRegex.commandsRegexNoN
     msgTools.sendUnauthorizedMessage(bot, msg);
   }
 });
+
+function cancelAllDlInChat(msg: TelegramBot.Message, allChats?: boolean): void {
+  dlManager.forEachDownload(dlDetails => {
+    if (allChats || msg.chat.id === dlDetails.tgChatId) {
+      dlManager.addCancelled(dlDetails);
+    }
+  });
+  cancelMultipleMirrors(msg);
+}
 
 function cancelMultipleMirrors(msg: TelegramBot.Message): void {
   var count = 0;

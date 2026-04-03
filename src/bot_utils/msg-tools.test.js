@@ -1,5 +1,5 @@
 jest.mock('@src/.constants', () => ({}), { virtual: true });
-jest.mock('node-telegram-bot-api');
+jest.mock('node-telegram-bot-api', () => ({}), { virtual: true });
 jest.mock('@src/download_tools/aria-tools', () => ({}), { virtual: true });
 jest.mock('@src/dl_model/dl-manager', () => ({
   DlManager: {
