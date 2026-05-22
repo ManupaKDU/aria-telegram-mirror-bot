@@ -40,7 +40,7 @@ export function listFiles (fileName:string, callback:(err:string, message:string
   });
 }
 
-function generateSearchQuery (fileName:string, parent:string): string {
+export function generateSearchQuery (fileName:string, parent:string): string {
   var q = '\'' + parent + '\' in parents and (';
   if (fileName.indexOf(' ') > -1) {
     for (var i = 0; i < 4; i++) {
