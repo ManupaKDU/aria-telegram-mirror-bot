@@ -7,7 +7,37 @@ jest.mock('@src/dl_model/dl-manager', () => ({
   }
 }), { virtual: true });
 
-const { sleep } = require('@src/bot_utils/msg-tools');
+const { sleep, deleteMsg } = require('@src/bot_utils/msg-tools');
+
+describe('deleteMsg', () => {
+  let consoleLogSpy;
+
+  beforeEach(() => {
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    consoleLogSpy.mockRestore();
+    jest.useRealTimers();
+  });
+
+  it('should catch error when bot.deleteMessage rejects', async () => {
+    const mockBot = {
+      deleteMessage: jest.fn().mockRejectedValue(new Error('test error'))
+    };
+    const mockMsg = {
+      chat: { id: 123 },
+      message_id: 456
+    };
+
+    await deleteMsg(mockBot, mockMsg);
+
+    expect(mockBot.deleteMessage).toHaveBeenCalledWith(123, '456');
+
+    expect(consoleLogSpy).toHaveBeenCalledWith('Failed to delete message. Does the bot have message delete permissions for this chat? test error');
+  });
+});
 
 describe('sleep', () => {
   beforeEach(() => {
