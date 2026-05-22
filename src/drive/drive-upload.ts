@@ -7,7 +7,14 @@ import { GaxiosResponse } from 'gaxios';
 import { DlVars } from '../dl_model/detail';
 
 
-export function uploadFileOrFolder(dlDetails: DlVars, filePath: string, mime: string, parent: string, size: number, callback: (err: string, id: string) => void): void {
+export interface UploadOptions {
+  filePath: string;
+  mime: string;
+  parent: string;
+  size: number;
+}
+
+export function uploadFileOrFolder(dlDetails: DlVars, options: UploadOptions, callback: (err: string, id: string) => void): void {
   driveAuth.call((err, auth) => {
     if (err) {
       callback(err, null);
@@ -15,12 +22,12 @@ export function uploadFileOrFolder(dlDetails: DlVars, filePath: string, mime: st
     }
     const drive = google.drive({ version: 'v3', auth });
 
-    if (mime === 'application/vnd.google-apps.folder' || size === 0) {
-      createFolderOrEmpty(drive, filePath, parent, mime, callback);
+    if (options.mime === 'application/vnd.google-apps.folder' || options.size === 0) {
+      createFolderOrEmpty(drive, options.filePath, options.parent, options.mime, callback);
     } else {
-      driveFile.uploadGoogleDriveFile(dlDetails, parent, {
-        filePath: filePath,
-        mimeType: mime
+      driveFile.uploadGoogleDriveFile(dlDetails, options.parent, {
+        filePath: options.filePath,
+        mimeType: options.mime
       })
         .then(id => callback(null, id))
         .catch(err => callback(err.message, null));

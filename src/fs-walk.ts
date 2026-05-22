@@ -17,8 +17,12 @@ export function uploadRecursive(dlDetails: DlVars, path: string, parent: string,
       return;
     }
     if (stat.isDirectory()) {
-      gdrive.uploadFileOrFolder(dlDetails, path, 'application/vnd.google-apps.folder', parent, 0,
-        (err, fileId) => {
+      gdrive.uploadFileOrFolder(dlDetails, {
+        filePath: path,
+        mime: 'application/vnd.google-apps.folder',
+        parent: parent,
+        size: 0
+      }, (err, fileId) => {
           if (err) {
             callback(err, null, false);
           } else {
@@ -83,7 +87,12 @@ function processFileOrDir(dlDetails: DlVars, path: string, parent: string, callb
     }
     if (stat.isDirectory()) {
       // path is a directory. Do not call the callback until the path has been completely traversed.
-      gdrive.uploadFileOrFolder(dlDetails, path, 'application/vnd.google-apps.folder', parent, 0, (err: string, fileId: string) => {
+      gdrive.uploadFileOrFolder(dlDetails, {
+        filePath: path,
+        mime: 'application/vnd.google-apps.folder',
+        parent: parent,
+        size: 0
+      }, (err: string, fileId: string) => {
         if (err) {
           callback(err);
         } else {
@@ -95,7 +104,12 @@ function processFileOrDir(dlDetails: DlVars, path: string, parent: string, callb
       if (!mimeType) {
         mimeType = 'application/octet-stream';
       }
-      gdrive.uploadFileOrFolder(dlDetails, path, mimeType, parent, stat.size, (err: string, fileId: string) => {
+      gdrive.uploadFileOrFolder(dlDetails, {
+        filePath: path,
+        mime: mimeType,
+        parent: parent,
+        size: stat.size
+      }, (err: string, fileId: string) => {
         if (err) {
           callback(err);
         } else {
