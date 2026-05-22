@@ -118,7 +118,13 @@ export function uploadGoogleDriveFile(dlDetails: DlVars, parent: string, file: {
         }
       auth.getAccessToken().then(tokenResponse => {
         var token = tokenResponse.token;
-        var options = driveUtils.getPublicUrlRequestHeaders(size, file.mimeType, token, fileName, parent);
+        var options = driveUtils.getPublicUrlRequestHeaders({
+          size: size,
+          mimeType: file.mimeType,
+          token: token,
+          fileName: fileName,
+          parent: parent
+        });
 
         request(options, async function (error: Error, response: request.Response) {
           if (error) {

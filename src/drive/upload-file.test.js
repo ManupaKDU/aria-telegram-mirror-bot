@@ -19,8 +19,9 @@ jest.mock('request', () => {
   return req;
 }, { virtual: true });
 
-// Mock `fs.statSync` and `fs.createReadStream`
+// Mock `fs.stat` and `fs.createReadStream`
 jest.mock('fs', () => ({
+  stat: jest.fn((path, cb) => cb(null, { size: 2000 })),
   statSync: jest.fn().mockReturnValue({ size: 2000 }),
   createReadStream: jest.fn(),
   writeFileSync: jest.fn()
