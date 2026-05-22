@@ -6,7 +6,15 @@ export function getFileLink(fileId: string, isFolder: boolean): string {
   }
 }
 
-export function getPublicUrlRequestHeaders(size: number, mimeType: string, token: string, fileName: string, parent: string): any {
+export interface PublicUrlRequestOptions {
+  size: number;
+  mimeType: string;
+  token: string;
+  fileName: string;
+  parent: string;
+}
+
+export function getPublicUrlRequestHeaders(options: PublicUrlRequestOptions): any {
   return {
     method: 'POST',
     url: 'https://www.googleapis.com/upload/drive/v3/files',
@@ -17,15 +25,15 @@ export function getPublicUrlRequestHeaders(size: number, mimeType: string, token
     headers:
     {
       'Cache-Control': 'no-cache',
-      'X-Upload-Content-Length': size,
-      'X-Upload-Content-Type': mimeType,
+      'X-Upload-Content-Length': options.size,
+      'X-Upload-Content-Type': options.mimeType,
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      'Authorization': `Bearer ${options.token}`
     },
     body: {
-      name: fileName,
-      mimeType: mimeType,
-      parents: [parent]
+      name: options.fileName,
+      mimeType: options.mimeType,
+      parents: [options.parent]
     },
     json: true
   };
