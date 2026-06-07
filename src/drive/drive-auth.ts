@@ -10,14 +10,41 @@ const TOKEN_PATH = './credentials.json';
  * Authorize a client with credentials, then call the Google Drive API.
  * @param {function} callback The callback to call with the authorized client.
  */
+let cachedClient: OAuth2Client | null = null;
+let isInitializing = false;
+let authCallbacks: Array<(err: string, client: OAuth2Client) => void> = [];
+
 export function call(callback: (err: string, client: OAuth2Client) => void): void {
+  if (cachedClient) {
+    return callback(null, cachedClient);
+  }
+
+  authCallbacks.push(callback);
+
+  if (isInitializing) {
+    return;
+  }
+
+  isInitializing = true;
+
   // Load client secrets from a local file.
   fs.readFile('./client_secret.json', 'utf8', (err, content) => {
     if (err) {
       console.log('Error loading client secret file:', err.message);
-      callback(err.message, null);
+      isInitializing = false;
+      const callbacks = authCallbacks;
+      authCallbacks = [];
+      callbacks.forEach(cb => cb(err.message, null));
     } else {
-      authorize(JSON.parse(content), callback);
+      authorize(JSON.parse(content), (authErr: string, client: OAuth2Client) => {
+        isInitializing = false;
+        if (!authErr && client) {
+          cachedClient = client;
+        }
+        const callbacks = authCallbacks;
+        authCallbacks = [];
+        callbacks.forEach(cb => cb(authErr, client));
+      });
     }
   });
 }
