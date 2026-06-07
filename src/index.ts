@@ -202,8 +202,7 @@ function cancelMultipleMirrors(msg: TelegramBot.Message): void {
 
 function sendCancelledMessages(): void {
   dlManager.forEachCancelledChat((usernames, tgChat) => {
-    var message = usernames.reduce((prev, cur, i) => (i > 0) ? `${prev}${cur}, ` : `${cur}, `,
-      usernames[0]);
+    var message = usernames.join(', ') + ', ';
     message += 'your downloads have been manually cancelled.';
     bot.sendMessage(tgChat, message, { parse_mode: 'HTML' })
       .then(() => {
