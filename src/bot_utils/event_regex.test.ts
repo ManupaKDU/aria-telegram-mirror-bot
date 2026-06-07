@@ -27,6 +27,34 @@ describe('EventRegex Disabled', () => {
     expect(eventRegex.commandsRegexNoName.start).toEqual(/(^\/start|^\/start@[\S]+)$/i);
     expect(eventRegex.commandsRegexNoName.mirror).toEqual(/(^\/mirror|^\/mirror@[\S]+) (.+)/i);
   });
+
+  it('should match correctly against string inputs when disabled', () => {
+    jest.doMock('../.constants', () => ({
+      COMMANDS_USE_BOT_NAME: {
+        ENABLED: false,
+        NAME: '@testbot'
+      }
+    }), { virtual: true });
+
+    const { EventRegex } = require('./event_regex');
+    const eventRegex = new EventRegex();
+
+    // Valid strings
+    expect(eventRegex.commandsRegex.start.test('/start')).toBe(true);
+    expect(eventRegex.commandsRegex.mirror.test('/mirror http://example.com')).toBe(true);
+    expect(eventRegex.commandsRegex.list.test('/list test')).toBe(true);
+
+    // Invalid strings - when disabled, shouldn't accept names
+    expect(eventRegex.commandsRegex.start.test('/start@testbot')).toBe(false);
+    expect(eventRegex.commandsRegex.start.test('/start@otherbot')).toBe(false);
+    expect(eventRegex.commandsRegex.mirror.test('/mirror')).toBe(false); // missing arg
+
+    // NoName should match regardless
+    expect(eventRegex.commandsRegexNoName.start.test('/start')).toBe(true);
+    expect(eventRegex.commandsRegexNoName.start.test('/start@anybot')).toBe(true);
+    expect(eventRegex.commandsRegexNoName.mirror.test('/mirror http://example.com')).toBe(true);
+    expect(eventRegex.commandsRegexNoName.mirror.test('/mirror@anybot http://example.com')).toBe(true);
+  });
 });
 
 describe('EventRegex Enabled', () => {
@@ -58,6 +86,39 @@ describe('EventRegex Enabled', () => {
 
     expect(eventRegex.commandsRegexNoName.start).toEqual(/(^\/start|^\/start@[\S]+)$/i);
     expect(eventRegex.commandsRegexNoName.mirror).toEqual(/(^\/mirror|^\/mirror@[\S]+) (.+)/i);
+  });
+
+  it('should match correctly against string inputs when enabled', () => {
+    jest.doMock('../.constants', () => ({
+      COMMANDS_USE_BOT_NAME: {
+        ENABLED: true,
+        NAME: '@testbot'
+      }
+    }), { virtual: true });
+
+    const { EventRegex } = require('./event_regex');
+    const eventRegex = new EventRegex();
+
+    // Valid strings with bot name
+    expect(eventRegex.commandsRegex.start.test('/start@testbot')).toBe(true);
+    expect(eventRegex.commandsRegex.mirror.test('/mirror@testbot http://example.com')).toBe(true);
+
+    // Invalid strings
+    expect(eventRegex.commandsRegex.start.test('/start')).toBe(false); // missing bot name
+    expect(eventRegex.commandsRegex.start.test('/start@otherbot')).toBe(false); // wrong bot name
+    expect(eventRegex.commandsRegex.mirror.test('/mirror@testbot')).toBe(false); // missing arg
+
+    // /list should ignore bot name requirement
+    expect(eventRegex.commandsRegex.list.test('/list path')).toBe(true);
+    expect(eventRegex.commandsRegex.list.test('/list@testbot path')).toBe(false);
+    expect(eventRegex.commandsRegex.list.test('/list')).toBe(false); // missing arg
+
+    // NoName should match regardless
+    expect(eventRegex.commandsRegexNoName.start.test('/start')).toBe(true);
+    expect(eventRegex.commandsRegexNoName.start.test('/start@testbot')).toBe(true);
+    expect(eventRegex.commandsRegexNoName.start.test('/start@otherbot')).toBe(true);
+    expect(eventRegex.commandsRegexNoName.mirror.test('/mirror http://example.com')).toBe(true);
+    expect(eventRegex.commandsRegexNoName.mirror.test('/mirror@anybot http://example.com')).toBe(true);
   });
 });
 
