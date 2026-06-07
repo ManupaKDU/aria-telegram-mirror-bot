@@ -41,27 +41,31 @@ export function listFiles (fileName:string, callback:(err:string, message:string
 }
 
 export function generateSearchQuery (fileName:string, parent:string): string {
-  var q = '\'' + parent + '\' in parents and (';
-  if (fileName.indexOf(' ') > -1) {
+  const safeFileName = fileName.replace(/\\/g, '\\\\').replace(/'/g, '\\\'');
+  const safeParent = parent.replace(/\\/g, '\\\\').replace(/'/g, '\\\'');
+
+  var q = '\'' + safeParent + '\' in parents and (';
+  if (safeFileName.indexOf(' ') > -1) {
+    let currentFileName = safeFileName;
     for (var i = 0; i < 4; i++) {
-      q += 'name contains \'' + fileName + '\' ';
+      q += 'name contains \'' + currentFileName + '\' ';
       switch (i) {
         case 0:
-          fileName = fileName.replace(/ /g, '.');
+          currentFileName = currentFileName.replace(/ /g, '.');
           q += 'or ';
           break;
         case 1:
-          fileName = fileName.replace(/\./g, '-');
+          currentFileName = currentFileName.replace(/\./g, '-');
           q += 'or ';
           break;
         case 2:
-          fileName = fileName.replace(/-/g, '_');
+          currentFileName = currentFileName.replace(/-/g, '_');
           q += 'or ';
           break;
       }
     }
   } else {
-    q += 'name contains \'' + fileName + '\'';
+    q += 'name contains \'' + safeFileName + '\'';
   }
   q += ')';
   return q;
