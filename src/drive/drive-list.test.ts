@@ -30,4 +30,9 @@ describe('generateSearchQuery', () => {
     const query = generateSearchQuery(' ', 'parent-dir');
     expect(query).toBe('\'parent-dir\' in parents and (name contains \' \' or name contains \'.\' or name contains \'-\' or name contains \'_\' )');
   });
+
+  it('should escape single quotes and backslashes in filename and parent to prevent injection', () => {
+    const query = generateSearchQuery('malicious\' OR name contains \'test\\', 'parent\'\\dir');
+    expect(query).toBe('\'parent\\\'\\\\dir\' in parents and (name contains \'malicious\\\' OR name contains \\\'test\\\\\' or name contains \'malicious\\\'.OR.name.contains.\\\'test\\\\\' or name contains \'malicious\\\'-OR-name-contains-\\\'test\\\\\' or name contains \'malicious\\\'_OR_name_contains_\\\'test\\\\\' )');
+  });
 });
