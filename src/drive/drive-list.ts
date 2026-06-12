@@ -40,11 +40,15 @@ export function listFiles (fileName:string, callback:(err:string, message:string
   });
 }
 
+function escapeDriveQueryString(str: string): string {
+  return str.replace(/\\/g, '\\\\').replace(/'/g, '\\\'');
+}
+
 export function generateSearchQuery (fileName:string, parent:string): string {
-  var q = '\'' + parent + '\' in parents and (';
+  var q = '\'' + escapeDriveQueryString(parent) + '\' in parents and (';
   if (fileName.indexOf(' ') > -1) {
     for (var i = 0; i < 4; i++) {
-      q += 'name contains \'' + fileName + '\' ';
+      q += 'name contains \'' + escapeDriveQueryString(fileName) + '\' ';
       switch (i) {
         case 0:
           fileName = fileName.replace(/ /g, '.');
@@ -61,7 +65,7 @@ export function generateSearchQuery (fileName:string, parent:string): string {
       }
     }
   } else {
-    q += 'name contains \'' + fileName + '\'';
+    q += 'name contains \'' + escapeDriveQueryString(fileName) + '\'';
   }
   q += ')';
   return q;

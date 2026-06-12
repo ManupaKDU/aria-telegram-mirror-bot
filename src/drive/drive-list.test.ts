@@ -30,4 +30,9 @@ describe('generateSearchQuery', () => {
     const query = generateSearchQuery(' ', 'parent-dir');
     expect(query).toBe('\'parent-dir\' in parents and (name contains \' \' or name contains \'.\' or name contains \'-\' or name contains \'_\' )');
   });
+
+  it('should escape single quotes and backslashes in filename and parent to prevent injection', () => {
+    const query = generateSearchQuery("file'name\\", "parent'\\dir");
+    expect(query).toBe("'parent\\'\\\\dir' in parents and (name contains 'file\\'name\\\\')");
+  });
 });
