@@ -7,7 +7,7 @@ jest.mock('@src/dl_model/dl-manager', () => ({
   }
 }), { virtual: true });
 
-const { sleep, deleteMsg } = require('@src/bot_utils/msg-tools');
+const { sleep, deleteMsg, editMessage } = require('@src/bot_utils/msg-tools');
 
 describe('deleteMsg', () => {
   let consoleLogSpy;
@@ -36,6 +36,81 @@ describe('deleteMsg', () => {
     expect(mockBot.deleteMessage).toHaveBeenCalledWith(123, '456');
 
     expect(consoleLogSpy).toHaveBeenCalledWith('Failed to delete message. Does the bot have message delete permissions for this chat? test error');
+  });
+});
+
+describe('editMessage', () => {
+  let mockBot;
+
+  beforeEach(() => {
+    mockBot = {
+      editMessageText: jest.fn().mockResolvedValue('edited')
+    };
+  });
+
+  it('should call bot.editMessageText with correct parameters when all fields are present', async () => {
+    const mockMsg = {
+      chat: { id: 123 },
+      message_id: 456
+    };
+    const text = 'new text';
+
+    const result = await editMessage(mockBot, mockMsg, text);
+
+    expect(mockBot.editMessageText).toHaveBeenCalledWith(text, {
+      chat_id: 123,
+      message_id: 456,
+      parse_mode: 'HTML'
+    });
+    expect(result).toBe('edited');
+  });
+
+  it('should resolve immediately if msg is undefined', async () => {
+    const result = await editMessage(mockBot, undefined, 'text');
+
+    expect(mockBot.editMessageText).not.toHaveBeenCalled();
+    expect(result).toBeUndefined();
+  });
+
+  it('should resolve immediately if msg is null', async () => {
+    const result = await editMessage(mockBot, null, 'text');
+
+    expect(mockBot.editMessageText).not.toHaveBeenCalled();
+    expect(result).toBeUndefined();
+  });
+
+  it('should resolve immediately if msg.chat is missing', async () => {
+    const mockMsg = {
+      message_id: 456
+    };
+
+    const result = await editMessage(mockBot, mockMsg, 'text');
+
+    expect(mockBot.editMessageText).not.toHaveBeenCalled();
+    expect(result).toBeUndefined();
+  });
+
+  it('should resolve immediately if msg.chat.id is missing', async () => {
+    const mockMsg = {
+      chat: {},
+      message_id: 456
+    };
+
+    const result = await editMessage(mockBot, mockMsg, 'text');
+
+    expect(mockBot.editMessageText).not.toHaveBeenCalled();
+    expect(result).toBeUndefined();
+  });
+
+  it('should resolve immediately if msg.message_id is missing', async () => {
+    const mockMsg = {
+      chat: { id: 123 }
+    };
+
+    const result = await editMessage(mockBot, mockMsg, 'text');
+
+    expect(mockBot.editMessageText).not.toHaveBeenCalled();
+    expect(result).toBeUndefined();
   });
 });
 
