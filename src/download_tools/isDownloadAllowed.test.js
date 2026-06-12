@@ -31,4 +31,20 @@ describe('isDownloadAllowed', () => {
   it('should handle URL with query parameters containing filtered domains', () => {
     expect(isDownloadAllowed('https://google.com/search?q=yts')).toBe(false);
   });
+
+  it('should prevent filter bypass via URL encoding', () => {
+    // URL encoded version of 'yts' is 'y%74s'
+    expect(isDownloadAllowed('https://example.com/y%74s/movie')).toBe(false);
+    expect(isDownloadAllowed('https://example.com/%79%74%73/movie')).toBe(false);
+
+    // URL encoded version of 'cruzing.xyz'
+    expect(isDownloadAllowed('http://%63ruzing.xyz/file')).toBe(false);
+  });
+
+  it('should handle malformed URL encoding gracefully and evaluate original URL', () => {
+    // %ZZ is an invalid URI encoding
+    expect(isDownloadAllowed('https://example.com/test%ZZ')).toBe(true);
+    // Even if malformed encoding exists elsewhere, it still correctly evaluates the original URL for blocked domains
+    expect(isDownloadAllowed('https://yts.mx/movie%ZZ')).toBe(false);
+  });
 });
