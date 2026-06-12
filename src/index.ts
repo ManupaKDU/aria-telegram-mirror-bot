@@ -415,7 +415,7 @@ function cleanupDownload(gid: string, message: string, url?: string, dlDetails?:
     downloadUtils.deleteDownloadedFile(dlDetails.downloadDir);
   } else {
     // Why is this message so calm? We should be SCREAMING at this point!
-    console.error(`cleanupDownload: Could not get dlDetails for ${gid}`);
+    throw new Error(`CRITICAL: cleanupDownload failed! Could not get dlDetails for ${gid}`);
   }
 }
 
