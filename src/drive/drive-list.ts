@@ -71,6 +71,15 @@ export function generateSearchQuery (fileName:string, parent:string): string {
   return q;
 }
 
+function escapeHTML (str:string): string {
+  if (!str) return str;
+  return str.replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+}
+
 function getMultipleFileLinks (files:any[]): void {
   for (var i = 0; i < files.length; i++) {
     files[i]['url'] = utils.getFileLink(
@@ -80,11 +89,11 @@ function getMultipleFileLinks (files:any[]): void {
   }
 }
 
-function generateFilesListMessage (files:any[]): string {
+export function generateFilesListMessage (files:any[]): string {
   var message = '';
   if (files.length > 0) {
     for (var i = 0; i < files.length; i++) {
-      message += '<a href = \'' + files[i]['url'] + '\'>' + files[i]['name'] + '</a>';
+      message += '<a href = \'' + files[i]['url'] + '\'>' + escapeHTML(files[i]['name']) + '</a>';
       if (files[i]['size'])
         message += ' (' + dlUtils.formatSize(files[i]['size']) + ')\n';
       else if (files[i]['mimeType'] === 'application/vnd.google-apps.folder')

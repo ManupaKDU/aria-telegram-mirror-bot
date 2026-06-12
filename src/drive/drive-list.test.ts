@@ -1,4 +1,4 @@
-import { generateSearchQuery } from './drive-list';
+import { generateSearchQuery, generateFilesListMessage } from './drive-list';
 
 describe('generateSearchQuery', () => {
   it('should generate a simple query for a filename without spaces', () => {
@@ -34,5 +34,28 @@ describe('generateSearchQuery', () => {
   it('should escape single quotes and backslashes in filename and parent to prevent injection', () => {
     const query = generateSearchQuery('malicious\' OR name contains \'test\\', 'parent\'\\dir');
     expect(query).toBe('\'parent\\\'\\\\dir\' in parents and (name contains \'malicious\\\' OR name contains \\\'test\\\\\' or name contains \'malicious\\\'.OR.name.contains.\\\'test\\\\\' or name contains \'malicious\\\'-OR-name-contains-\\\'test\\\\\' or name contains \'malicious\\\'_OR_name_contains_\\\'test\\\\\' )');
+  });
+});
+
+describe('generateFilesListMessage', () => {
+  it('should escape HTML entities in filenames', () => {
+    const files = [
+      {
+        name: '<script>alert("XSS")</script>&\'',
+        url: 'http://example.com/file',
+        size: 1024,
+        mimeType: 'text/html'
+      }
+    ];
+
+    const message = generateFilesListMessage(files);
+
+    expect(message).toContain('&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;&amp;&#039;');
+    expect(message).not.toContain('<script>');
+  });
+
+  it('should handle empty file lists', () => {
+    const message = generateFilesListMessage([]);
+    expect(message).toBe('There are no files matching your parameters');
   });
 });
