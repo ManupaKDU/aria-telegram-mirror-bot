@@ -7,7 +7,68 @@ jest.mock('@src/dl_model/dl-manager', () => ({
   }
 }), { virtual: true });
 
-const { sleep, deleteMsg } = require('@src/bot_utils/msg-tools');
+const { sleep, deleteMsg, editMessage } = require('@src/bot_utils/msg-tools');
+
+describe('editMessage', () => {
+  it('should call bot.editMessageText when msg contains chat.id and message_id', async () => {
+    const mockBot = {
+      editMessageText: jest.fn().mockResolvedValue('success')
+    };
+    const mockMsg = {
+      chat: { id: 123 },
+      message_id: 456
+    };
+    const text = 'new text';
+
+    const result = await editMessage(mockBot, mockMsg, text);
+
+    expect(mockBot.editMessageText).toHaveBeenCalledWith(text, {
+      chat_id: 123,
+      message_id: 456,
+      parse_mode: 'HTML'
+    });
+    expect(result).toBe('success');
+  });
+
+  it('should resolve immediately if msg is undefined', async () => {
+    const mockBot = {
+      editMessageText: jest.fn()
+    };
+    const result = await editMessage(mockBot, undefined, 'text');
+    expect(mockBot.editMessageText).not.toHaveBeenCalled();
+    expect(result).toBeUndefined();
+  });
+
+  it('should resolve immediately if msg.chat is undefined', async () => {
+    const mockBot = {
+      editMessageText: jest.fn()
+    };
+    const mockMsg = { message_id: 456 };
+    const result = await editMessage(mockBot, mockMsg, 'text');
+    expect(mockBot.editMessageText).not.toHaveBeenCalled();
+    expect(result).toBeUndefined();
+  });
+
+  it('should resolve immediately if msg.chat.id is undefined', async () => {
+    const mockBot = {
+      editMessageText: jest.fn()
+    };
+    const mockMsg = { chat: {}, message_id: 456 };
+    const result = await editMessage(mockBot, mockMsg, 'text');
+    expect(mockBot.editMessageText).not.toHaveBeenCalled();
+    expect(result).toBeUndefined();
+  });
+
+  it('should resolve immediately if msg.message_id is undefined', async () => {
+    const mockBot = {
+      editMessageText: jest.fn()
+    };
+    const mockMsg = { chat: { id: 123 } };
+    const result = await editMessage(mockBot, mockMsg, 'text');
+    expect(mockBot.editMessageText).not.toHaveBeenCalled();
+    expect(result).toBeUndefined();
+  });
+});
 
 describe('deleteMsg', () => {
   let consoleLogSpy;
