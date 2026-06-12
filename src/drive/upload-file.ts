@@ -19,7 +19,9 @@ interface Chunk {
    * Divide the file to multi path for upload
    * @returns {array} array of chunk info
    */
-function getChunks(filePath: string, start: number, allsize: number): Chunk[] {
+async function getChunks(filePath: string, start: number): Promise<Chunk[]> {
+  var stat = await fs.promises.stat(filePath);
+  var allsize = stat.size;
   var sep = allsize < (20 * 1024 * 1024) ? allsize : (20 * 1024 * 1024) - 1;
   var ar = [];
   for (var i = start; i < allsize; i += sep) {
@@ -116,11 +118,11 @@ export function uploadGoogleDriveFile(dlDetails: DlVars, parent: string, file: {
         if (err) {
           return reject(new Error('Failed to get OAuth client'));
         }
-      auth.getAccessToken().then(tokenResponse => {
-        var token = tokenResponse.token;
-        var options = driveUtils.getPublicUrlRequestHeaders(size, file.mimeType, token, fileName, parent);
+        auth.getAccessToken().then(tokenResponse => {
+          var token = tokenResponse.token;
+          var options = driveUtils.getPublicUrlRequestHeaders(size, file.mimeType, token, fileName, parent);
 
-        request(options, async function (error: Error, response: request.Response) {
+          request(options, async function (error: Error, response: request.Response) {
           if (error) {
             return reject(error);
           }
@@ -133,7 +135,7 @@ export function uploadGoogleDriveFile(dlDetails: DlVars, parent: string, file: {
             return reject(new Error(`Get drive resumable url return invalid headers: ${JSON.stringify(response.headers, null, 2)}`));
           }
 
-          let chunks = getChunks(file.filePath, 0, size);
+          let chunks = await getChunks(file.filePath, 0);
           let fileId = null;
           try {
             let i = 0;
@@ -142,7 +144,7 @@ export function uploadGoogleDriveFile(dlDetails: DlVars, parent: string, file: {
               // last chunk will return the file id
               fileId = await uploadChunk(file.filePath, chunks[i], file.mimeType, response.headers.location);
               if ((typeof fileId === 'object') && (fileId !== null)) {
-                chunks = getChunks(file.filePath, fileId.last, size);
+                chunks = await getChunks(file.filePath, fileId.last);
                 i = 0;
                 dlDetails.uploadedBytes = dlDetails.uploadedBytes - lastUploadedBytes + fileId.last;
                 lastUploadedBytes = fileId.last;

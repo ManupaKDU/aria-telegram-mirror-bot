@@ -5,6 +5,8 @@ import TelegramBot = require('node-telegram-bot-api');
 import details = require('../dl_model/detail');
 import dlm = require('../dl_model/dl-manager');
 var dlManager = dlm.DlManager.getInstance();
+const sudoUsersSet = new Set(constants.SUDO_USERS);
+const authorizedChatsSet = new Set(constants.AUTHORIZED_CHATS);
 
 export async function deleteMsg(bot: TelegramBot, msg: TelegramBot.Message, delay?: number): Promise<any> {
   if (delay) await sleep(delay);
@@ -66,16 +68,14 @@ export function sleep(ms: number): Promise<any> {
 }
 
 export function isAuthorized(msg: TelegramBot.Message, skipDlOwner?: boolean): number {
-  for (var i = 0; i < constants.SUDO_USERS.length; i++) {
-    if (constants.SUDO_USERS[i] === msg.from.id) return 0;
-  }
+  if (sudoUsersSet.has(msg.from.id)) return 0;
   if (!skipDlOwner && msg.reply_to_message) {
     var dlDetails = dlManager.getDownloadByMsgId(msg.reply_to_message);
     if (dlDetails && msg.from.id === dlDetails.tgFromId) return 1;
   }
-  if (constants.AUTHORIZED_CHATS.indexOf(msg.chat.id) > -1 &&
+  if (authorizedChatsSet.has(msg.chat.id) &&
     msg.chat.all_members_are_administrators) return 2;
-  if (constants.AUTHORIZED_CHATS.indexOf(msg.chat.id) > -1) return 3;
+  if (authorizedChatsSet.has(msg.chat.id)) return 3;
   return -1;
 }
 
