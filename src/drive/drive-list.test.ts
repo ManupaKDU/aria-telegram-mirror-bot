@@ -1,4 +1,4 @@
-import { generateSearchQuery } from './drive-list';
+import { generateSearchQuery, generateFilesListMessage } from './drive-list';
 
 describe('generateSearchQuery', () => {
   it('should generate a simple query for a filename without spaces', () => {
@@ -29,5 +29,28 @@ describe('generateSearchQuery', () => {
   it('should handle a single space as a filename', () => {
     const query = generateSearchQuery(' ', 'parent-dir');
     expect(query).toBe('\'parent-dir\' in parents and (name contains \' \' or name contains \'.\' or name contains \'-\' or name contains \'_\' )');
+  });
+});
+
+describe('generateFilesListMessage', () => {
+  it('should escape HTML entities in filenames', () => {
+    const files = [
+      {
+        name: '<script>alert("XSS")</script>&\'',
+        url: 'http://example.com/file',
+        size: 1024,
+        mimeType: 'text/html'
+      }
+    ];
+
+    const message = generateFilesListMessage(files);
+
+    expect(message).toContain('&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;&amp;&#039;');
+    expect(message).not.toContain('<script>');
+  });
+
+  it('should handle empty file lists', () => {
+    const message = generateFilesListMessage([]);
+    expect(message).toBe('There are no files matching your parameters');
   });
 });
