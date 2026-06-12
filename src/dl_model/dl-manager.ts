@@ -181,12 +181,7 @@ export class DlManager {
   }
 
   private checkUnique(toFind: string, src: string[]): boolean {
-    for (var item of src) {
-      if (item === toFind) {
-        return false;
-      }
-    }
-    return true;
+    return !src.includes(toFind);
   }
 
 }
