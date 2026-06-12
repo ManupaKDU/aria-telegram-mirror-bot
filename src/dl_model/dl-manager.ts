@@ -16,7 +16,7 @@ export class DlManager {
   private statusAll: any = {};
   private statusLock: any = {};
 
-  private cancelledMessages: any = {};
+  private cancelledMessages: { [key: string]: Set<string> } = {};
   private cancelledDls: any = {};
 
   private constructor() {
@@ -147,15 +147,12 @@ export class DlManager {
 
   addCancelled(dlDetails: dlDetails.DlVars): void {
     this.cancelledDls[dlDetails.gid] = dlDetails;
-    var message: string[] = this.cancelledMessages[dlDetails.tgChatId];
-    if (message) {
-      if (this.checkUnique(dlDetails.tgUsername, message)) {
-        message.push(dlDetails.tgUsername);
-      }
-    } else {
-      message = [dlDetails.tgUsername];
+    let message: Set<string> = this.cancelledMessages[dlDetails.tgChatId];
+    if (!message) {
+      message = new Set<string>();
+      this.cancelledMessages[dlDetails.tgChatId] = message;
     }
-    this.cancelledMessages[dlDetails.tgChatId] = message;
+    message.add(dlDetails.tgUsername);
   }
 
   forEachCancelledDl(callback: (dlDetails: dlDetails.DlVars) => void): void {
@@ -168,7 +165,7 @@ export class DlManager {
   forEachCancelledChat(callback: (usernames: string[], tgChat: string) => void): void {
     const keys = Object.keys(this.cancelledMessages);
     for (let i = 0; i < keys.length; i++) {
-      callback(this.cancelledMessages[keys[i]], keys[i]);
+      callback(Array.from(this.cancelledMessages[keys[i]]), keys[i]);
     }
   }
 
@@ -178,15 +175,6 @@ export class DlManager {
 
   removeCancelledDls(gid: string): void {
     delete this.cancelledDls[gid];
-  }
-
-  private checkUnique(toFind: string, src: string[]): boolean {
-    for (var item of src) {
-      if (item === toFind) {
-        return false;
-      }
-    }
-    return true;
   }
 
 }
