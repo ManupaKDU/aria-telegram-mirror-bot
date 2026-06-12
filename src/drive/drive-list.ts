@@ -11,7 +11,7 @@ import dlUtils = require('../download_tools/utils');
  * @param {string} fileName The name of the file to search for
  * @param {function} callback A function to call with an error, or a human-readable message
  */
-export function listFiles (fileName:string, callback:(err:string, message:string)=> void): void {
+export function listFiles (fileName: string, callback: (err: string, message: string) => void): void {
   driveAuth.call((err, auth) => {
     if (err) {
       callback(err, null);
@@ -28,7 +28,7 @@ export function listFiles (fileName:string, callback:(err:string, message:string
       supportsAllDrives: true,
       includeItemsFromAllDrives: true
     },
-    (err:Error, res:any) => {
+    (err: Error, res: any) => {
       if (err) {
         callback(err.message, null);
       } else {
@@ -40,26 +40,16 @@ export function listFiles (fileName:string, callback:(err:string, message:string
   });
 }
 
-export function generateSearchQuery (fileName:string, parent:string): string {
+export function generateSearchQuery (fileName: string, parent: string): string {
   var q = '\'' + parent + '\' in parents and (';
   if (fileName.indexOf(' ') > -1) {
-    for (var i = 0; i < 4; i++) {
-      q += 'name contains \'' + fileName + '\' ';
-      switch (i) {
-        case 0:
-          fileName = fileName.replace(/ /g, '.');
-          q += 'or ';
-          break;
-        case 1:
-          fileName = fileName.replace(/\./g, '-');
-          q += 'or ';
-          break;
-        case 2:
-          fileName = fileName.replace(/-/g, '_');
-          q += 'or ';
-          break;
-      }
-    }
+    q += 'name contains \'' + fileName + '\' or ';
+    fileName = fileName.replace(/ /g, '.');
+    q += 'name contains \'' + fileName + '\' or ';
+    fileName = fileName.replace(/\./g, '-');
+    q += 'name contains \'' + fileName + '\' or ';
+    fileName = fileName.replace(/-/g, '_');
+    q += 'name contains \'' + fileName + '\' ';
   } else {
     q += 'name contains \'' + fileName + '\'';
   }
@@ -67,7 +57,7 @@ export function generateSearchQuery (fileName:string, parent:string): string {
   return q;
 }
 
-function getMultipleFileLinks (files:any[]): void {
+function getMultipleFileLinks (files: any[]): void {
   for (var i = 0; i < files.length; i++) {
     files[i]['url'] = utils.getFileLink(
       files[i]['id'],
@@ -76,7 +66,7 @@ function getMultipleFileLinks (files:any[]): void {
   }
 }
 
-function generateFilesListMessage (files:any[]): string {
+function generateFilesListMessage (files: any[]): string {
   var message = '';
   if (files.length > 0) {
     for (var i = 0; i < files.length; i++) {
