@@ -201,5 +201,11 @@ if (constants.ARIA_FILTERED_DOMAINS && constants.ARIA_FILTERED_DOMAINS.length > 
 
 export function isDownloadAllowed(url: string): boolean {
   if (!filteredDomainsRegex) return true;
-  return !filteredDomainsRegex.test(url);
+  let decodedUrl = url;
+  try {
+    decodedUrl = decodeURIComponent(url);
+  } catch (e) {
+    // Ignore malformed URI errors and fallback to original url
+  }
+  return !filteredDomainsRegex.test(url) && !filteredDomainsRegex.test(decodedUrl);
 }
