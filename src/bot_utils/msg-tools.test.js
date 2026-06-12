@@ -7,7 +7,49 @@ jest.mock('@src/dl_model/dl-manager', () => ({
   }
 }), { virtual: true });
 
-const { sleep, deleteMsg } = require('@src/bot_utils/msg-tools');
+const { sleep, deleteMsg, sendUnauthorizedMessage } = require('@src/bot_utils/msg-tools');
+
+describe('sendUnauthorizedMessage', () => {
+  let consoleErrorSpy;
+  let consoleLogSpy;
+
+  beforeEach(() => {
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
+    consoleLogSpy.mockRestore();
+    jest.useRealTimers();
+  });
+
+  it('should send the unauthorized message to the correct chat', async () => {
+    const mockBot = {
+      sendMessage: jest.fn().mockResolvedValue({ chat: { id: 123 }, message_id: 789 }),
+      deleteMessage: jest.fn().mockResolvedValue()
+    };
+    const mockMsg = {
+      chat: { id: 123 },
+      message_id: 456
+    };
+
+    sendUnauthorizedMessage(mockBot, mockMsg);
+
+    expect(mockBot.sendMessage).toHaveBeenCalledWith(123, `You aren't authorized to use this bot here.`, {
+      reply_to_message_id: 456,
+      parse_mode: 'HTML'
+    });
+
+    // Flush microtasks for bot.sendMessage resolution
+    await Promise.resolve();
+    // Flush timers for delay and deleteMsg
+    jest.runAllTimers();
+    // Flush microtasks for deleteMessage resolution
+    await Promise.resolve();
+  });
+});
 
 describe('deleteMsg', () => {
   let consoleLogSpy;
