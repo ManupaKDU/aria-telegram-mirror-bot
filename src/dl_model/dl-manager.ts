@@ -92,9 +92,10 @@ export class DlManager {
    * @param callback 
    */
   forEachDownload(callback: (dlDetails: dlDetails.DlVars) => void): void {
-    const values = Object.values(this.allDls);
-    for (let i = 0; i < values.length; i++) {
-      callback(values[i] as dlDetails.DlVars);
+    for (const key in this.allDls) {
+      if (this.allDls.hasOwnProperty(key)) {
+        callback(this.allDls[key] as dlDetails.DlVars);
+      }
     }
   }
 
