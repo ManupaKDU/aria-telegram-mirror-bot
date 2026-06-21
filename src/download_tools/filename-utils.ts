@@ -3,13 +3,13 @@ import constants = require('../.constants');
 export const TYPE_METADATA = 'Metadata';
 
 interface FilePath {
-  path: string,
+  path: string;
   /**
    * The path extracted from the files array returned by aria2c.
    * It is present even for metadata, unlike 'path'
    */
-  inputPath: string,
-  downloadUri: string
+  inputPath: string;
+  downloadUri: string;
 }
 
 /**
@@ -112,7 +112,7 @@ export function isFilenameAllowed(filename: string): number {
 
   const lowerFilename = filename.toLowerCase();
   for (var i = 0; i < constants.ARIA_FILTERED_FILENAMES.length; i++) {
-    if (lowerFilename.indexOf(constants.ARIA_FILTERED_FILENAMES[i].toLowerCase()) > -1) return 0;
+    if (lowerFilename.includes(constants.ARIA_FILTERED_FILENAMES[i].toLowerCase())) return 0;
   }
   return 1;
 }
