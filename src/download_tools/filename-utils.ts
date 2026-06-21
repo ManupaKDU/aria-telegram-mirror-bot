@@ -110,8 +110,9 @@ export function isFilenameAllowed(filename: string): number {
   if (!constants.ARIA_FILTERED_FILENAMES) return 1;
   if (filename === TYPE_METADATA) return -1;
 
+  const lowerFilename = filename.toLowerCase();
   for (var i = 0; i < constants.ARIA_FILTERED_FILENAMES.length; i++) {
-    if (filename.indexOf(constants.ARIA_FILTERED_FILENAMES[i]) > -1) return 0;
+    if (lowerFilename.indexOf(constants.ARIA_FILTERED_FILENAMES[i].toLowerCase()) > -1) return 0;
   }
   return 1;
 }

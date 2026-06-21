@@ -43,7 +43,7 @@ describe('isFilenameAllowed', () => {
     expect(isFilenameAllowed('spam.txt')).toBe(1);
   });
 
-  it('should be case sensitive if the filtered filenames are mixed case', () => {
+  it('should be case insensitive if the filtered filenames are mixed case', () => {
     jest.doMock('../../out/.constants', () => ({
       ARIA_FILTERED_FILENAMES: ['FILTERED', 'blocked', 'spam'],
     }));
@@ -51,7 +51,7 @@ describe('isFilenameAllowed', () => {
 
     // 'FILTERED' is filtered, so it should match 'FILTERED'
     expect(isFilenameAllowed('THIS-IS-FILTERED-FILE.txt')).toBe(0);
-    // 'FILTERED' does not match 'filtered'
-    expect(isFilenameAllowed('this-is-filtered-file.txt')).toBe(1);
+    // 'FILTERED' should match 'filtered' because it is case insensitive now
+    expect(isFilenameAllowed('this-is-filtered-file.txt')).toBe(0);
   });
 });
