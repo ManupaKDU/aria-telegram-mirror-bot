@@ -82,13 +82,7 @@ export function isAuthorized(msg: TelegramBot.Message, skipDlOwner?: boolean): n
 export function isAdmin(bot: TelegramBot, msg: TelegramBot.Message, callback: (err: string, isAdmin: boolean) => void): void {
   bot.getChatAdministrators(msg.chat.id)
     .then(members => {
-      for (var i = 0; i < members.length; i++) {
-        if (members[i].user.id === msg.from.id) {
-          callback(null, true);
-          return;
-        }
-      }
-      callback(null, false);
+      callback(null, members.some(m => m.user.id === msg.from.id));
     })
     .catch(() => {
       callback(null, false);
