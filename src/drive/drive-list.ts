@@ -44,30 +44,19 @@ function escapeDriveQueryString(str: string): string {
   return str.replace(/\\/g, '\\\\').replace(/'/g, '\\\'');
 }
 
-export function generateSearchQuery (fileName:string, parent:string): string {
+export function generateSearchQuery (fileName: string, parent: string): string {
   const safeFileName = escapeDriveQueryString(fileName);
   const safeParent = escapeDriveQueryString(parent);
 
   var q = '\'' + safeParent + '\' in parents and (';
   if (fileName.indexOf(' ') > -1) {
-    let currentFileName = safeFileName;
-    for (var i = 0; i < 4; i++) {
-      q += 'name contains \'' + currentFileName + '\' ';
-      switch (i) {
-        case 0:
-          currentFileName = currentFileName.replace(/ /g, '.');
-          q += 'or ';
-          break;
-        case 1:
-          currentFileName = currentFileName.replace(/\./g, '-');
-          q += 'or ';
-          break;
-        case 2:
-          currentFileName = currentFileName.replace(/-/g, '_');
-          q += 'or ';
-          break;
-      }
-    }
+    q += 'name contains \'' + safeFileName + '\' or ';
+    let dotted = safeFileName.replace(/ /g, '.');
+    q += 'name contains \'' + dotted + '\' or ';
+    let dashed = dotted.replace(/\./g, '-');
+    q += 'name contains \'' + dashed + '\' or ';
+    let underscored = dashed.replace(/-/g, '_');
+    q += 'name contains \'' + underscored + '\' ';
   } else {
     q += 'name contains \'' + safeFileName + '\'';
   }
