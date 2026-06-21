@@ -84,12 +84,13 @@ function uploadChunk(filePath: string, chunk: Chunk, mimeType: string, uploadUrl
       } catch (e) {
         if (body && body.length > 1000) {
           let filename = 'upload-error-' + Date.now() + '.txt';
-          try {
-            fs.writeFileSync(filename, body.toString());
-            console.log(`Upload chunk returned large unparseable body. Dumped to ${filename}`);
-          } catch (err) {
-            console.log(`Failed to dump large unparseable body to file: ${err.message}`);
-          }
+          fs.writeFile(filename, body.toString(), (err) => {
+            if (err) {
+              console.log(`Failed to dump large unparseable body to file: ${err.message}`);
+            } else {
+              console.log(`Upload chunk returned large unparseable body. Dumped to ${filename}`);
+            }
+          });
         } else {
           console.log(body);
         }

@@ -20,12 +20,24 @@ jest.mock('request', () => {
 }, { virtual: true });
 
 // Mock `fs.stat` and `fs.createReadStream`
-jest.mock('fs', () => ({
-  stat: jest.fn((path, cb) => cb(null, { size: 2000 })),
-  statSync: jest.fn().mockReturnValue({ size: 2000 }),
-  createReadStream: jest.fn(),
-  writeFileSync: jest.fn()
-}));
+jest.mock('fs', () => {
+  const originalModule = jest.requireActual('fs');
+  return {
+    ...originalModule,
+    stat: jest.fn((path, cb) => cb(null, { size: 2000 })),
+    statSync: jest.fn().mockReturnValue({ size: 2000 }),
+    promises: {
+      ...originalModule.promises,
+      stat: jest.fn().mockResolvedValue({ size: 2000 })
+    },
+    createReadStream: jest.fn(),
+    writeFileSync: jest.fn(),
+    writeFile: jest.fn((path, data, cb) => {
+      if (cb) cb(null);
+    })
+  };
+});
+const fs = require('fs');
 
 describe('uploadChunk', () => {
   let uploadGoogleDriveFile;
@@ -75,8 +87,8 @@ describe('uploadChunk', () => {
     }
 
     const fsMock = require('fs');
-    expect(fsMock.writeFileSync).toHaveBeenCalled();
-    const [calledFilename, calledContent] = fsMock.writeFileSync.mock.calls[0];
+    expect(fsMock.writeFile).toHaveBeenCalled();
+    const [calledFilename, calledContent] = fsMock.writeFile.mock.calls[0];
     expect(calledFilename).toMatch(/upload-error-\d+\.txt/);
     expect(calledContent).toBe(largeUnparseableBody);
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining(`Upload chunk returned large unparseable body. Dumped to ${calledFilename}`));
@@ -117,7 +129,7 @@ describe('uploadChunk', () => {
     }
 
     const fsMock = require('fs');
-    expect(fsMock.writeFileSync).not.toHaveBeenCalled();
+    expect(fsMock.writeFile).not.toHaveBeenCalled();
     expect(consoleSpy).toHaveBeenCalledWith(smallUnparseableBody);
 
     consoleSpy.mockRestore();
