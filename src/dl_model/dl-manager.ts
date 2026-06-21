@@ -71,9 +71,7 @@ export class DlManager {
    * @param msg The download command message
    */
   getDownloadByMsgId(msg: TelegramBot.Message): dlDetails.DlVars {
-    const keys = Object.keys(this.allDls);
-    for (let i = 0; i < keys.length; i++) {
-      const download: dlDetails.DlVars = this.allDls[keys[i]];
+    for (const download of Object.values(this.allDls)) {
       if (download.tgChatId === msg.chat.id &&
         (download.tgMessageId === msg.message_id)) {
         return download;
@@ -92,9 +90,8 @@ export class DlManager {
    * @param callback 
    */
   forEachDownload(callback: (dlDetails: dlDetails.DlVars) => void): void {
-    const keys = Object.keys(this.allDls);
-    for (let i = 0; i < keys.length; i++) {
-      callback(this.allDls[keys[i]]);
+    for (const download of Object.values(this.allDls)) {
+      callback(download);
     }
   }
 
@@ -123,9 +120,8 @@ export class DlManager {
    * @param callback 
    */
   forEachStatus(callback: (status: StatusAll) => void): void {
-    const keys = Object.keys(this.statusAll);
-    for (let i = 0; i < keys.length; i++) {
-      callback(this.statusAll[keys[i]]);
+    for (const status of Object.values(this.statusAll)) {
+      callback(status);
     }
   }
 
@@ -156,9 +152,8 @@ export class DlManager {
   }
 
   forEachCancelledDl(callback: (dlDetails: dlDetails.DlVars) => void): void {
-    const keys = Object.keys(this.cancelledDls);
-    for (let i = 0; i < keys.length; i++) {
-      callback(this.cancelledDls[keys[i]]);
+    for (const dl of Object.values(this.cancelledDls)) {
+      callback(dl);
     }
   }
 
