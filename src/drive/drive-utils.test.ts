@@ -25,14 +25,16 @@ describe('getFileLink', () => {
 });
 
 describe('getPublicUrlRequestHeaders', () => {
-  it('should construct the correct request headers and body', () => {
-    const size = 1024;
-    const mimeType = 'text/plain';
-    const token = 'fake-token-123';
-    const fileName = 'test.txt';
-    const parent = 'folder-id-456';
+  it('should return a valid request headers object populated with the provided arguments', () => {
+    const options = {
+      size: 12345,
+      mimeType: 'text/plain',
+      token: 'fake-token-123',
+      fileName: 'test.txt',
+      parent: 'fake-parent-id'
+    };
 
-    const result = getPublicUrlRequestHeaders(size, mimeType, token, fileName, parent);
+    const result = getPublicUrlRequestHeaders(options);
 
     expect(result).toEqual({
       method: 'POST',
@@ -43,22 +45,30 @@ describe('getPublicUrlRequestHeaders', () => {
       },
       headers: {
         'Cache-Control': 'no-cache',
-        'X-Upload-Content-Length': size,
-        'X-Upload-Content-Type': mimeType,
+        'X-Upload-Content-Length': 12345,
+        'X-Upload-Content-Type': 'text/plain',
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Authorization': 'Bearer fake-token-123'
       },
       body: {
-        name: fileName,
-        mimeType: mimeType,
-        parents: [parent]
+        name: 'test.txt',
+        mimeType: 'text/plain',
+        parents: ['fake-parent-id']
       },
       json: true
     });
   });
 
-  it('should correctly map falsy but valid values', () => {
-    const result = getPublicUrlRequestHeaders(0, '', '', '', '');
+  it('should handle empty string inputs gracefully', () => {
+    const options = {
+      size: 0,
+      mimeType: '',
+      token: '',
+      fileName: '',
+      parent: ''
+    };
+
+    const result = getPublicUrlRequestHeaders(options);
 
     expect(result).toEqual({
       method: 'POST',
@@ -72,7 +82,7 @@ describe('getPublicUrlRequestHeaders', () => {
         'X-Upload-Content-Length': 0,
         'X-Upload-Content-Type': '',
         'Content-Type': 'application/json',
-        'Authorization': `Bearer `
+        'Authorization': 'Bearer '
       },
       body: {
         name: '',
@@ -81,5 +91,19 @@ describe('getPublicUrlRequestHeaders', () => {
       },
       json: true
     });
+  });
+
+  it('should handle negative sizes without modifying them (assuming caller does validation)', () => {
+    const options = {
+      size: -100,
+      mimeType: 'video/mp4',
+      token: 'token',
+      fileName: 'vid.mp4',
+      parent: 'parent'
+    };
+
+    const result = getPublicUrlRequestHeaders(options);
+
+    expect(result.headers['X-Upload-Content-Length']).toBe(-100);
   });
 });
