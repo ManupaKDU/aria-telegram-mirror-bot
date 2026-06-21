@@ -1,5 +1,4 @@
 import { generateStatusMessage } from './utils';
-import * as filenameUtils from './filename-utils';
 
 jest.mock('../.constants', () => ({
   ARIA_DOWNLOAD_LOCATION: '/downloads'
