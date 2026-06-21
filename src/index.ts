@@ -14,9 +14,9 @@ import { execFile } from 'child_process';
 
 const eventRegex = new EventRegex();
 const bot = new TelegramBot(constants.TOKEN, { polling: true });
-var websocketOpened = false;
-var statusInterval: NodeJS.Timeout;
-var dlManager = dlm.DlManager.getInstance();
+let websocketOpened = false;
+let statusInterval: NodeJS.Timeout;
+const dlManager = dlm.DlManager.getInstance();
 
 initAria2();
 
@@ -66,8 +66,8 @@ setEventCallback(eventRegex.commandsRegex.disk, eventRegex.commandsRegexNoName.d
           msgTools.sendMessage(bot, msg, `Error getting disk space: ${err.message}`);
           return;
         }
-        var lines = res.trim().split('\n');
-        var disk = lines[lines.length - 1].trim().split(/\s+/);
+        const lines = res.trim().split('\n');
+        const disk = lines[lines.length - 1].trim().split(/\s+/);
         msgTools.sendMessage(bot, msg, `Total space: ${disk[0]}B\nUsed: ${disk[1]}B\nAvailable: ${disk[2]}B`);
       }
     );
@@ -126,9 +126,9 @@ setEventCallback(eventRegex.commandsRegex.getFolder, eventRegex.commandsRegexNoN
 });
 
 setEventCallback(eventRegex.commandsRegex.cancelMirror, eventRegex.commandsRegexNoName.cancelMirror, (msg) => {
-  var authorizedCode = msgTools.isAuthorized(msg);
+  const authorizedCode = msgTools.isAuthorized(msg);
   if (msg.reply_to_message) {
-    var dlDetails = dlManager.getDownloadByMsgId(msg.reply_to_message);
+    const dlDetails = dlManager.getDownloadByMsgId(msg.reply_to_message);
     if (dlDetails) {
       if (authorizedCode > -1 && authorizedCode < 3) {
         cancelMirror(dlDetails, msg);
@@ -153,7 +153,7 @@ setEventCallback(eventRegex.commandsRegex.cancelMirror, eventRegex.commandsRegex
 });
 
 setEventCallback(eventRegex.commandsRegex.cancelAll, eventRegex.commandsRegexNoName.cancelAll, (msg) => {
-  var authorizedCode = msgTools.isAuthorized(msg, true);
+  const authorizedCode = msgTools.isAuthorized(msg, true);
   if (authorizedCode === 0) {
     // One of SUDO_USERS. Cancel all downloads
     cancelAllDlInChat(msg, true);
@@ -185,7 +185,7 @@ function cancelAllDlInChat(msg: TelegramBot.Message, allChats?: boolean): void {
 }
 
 function cancelMultipleMirrors(msg: TelegramBot.Message): void {
-  var count = 0;
+  let count = 0;
   dlManager.forEachCancelledDl(dl => {
     if (cancelMirror(dl)) {
       count++;
@@ -202,7 +202,7 @@ function cancelMultipleMirrors(msg: TelegramBot.Message): void {
 
 function sendCancelledMessages(): void {
   dlManager.forEachCancelledChat((usernames, tgChat) => {
-    var message = usernames.join(', ') + ', ';
+    let message = usernames.join(', ') + ', ';
     message += 'your downloads have been manually cancelled.';
     bot.sendMessage(tgChat, message, { parse_mode: 'HTML' })
       .then(() => {
@@ -257,7 +257,7 @@ function handleDisallowedFilename(dlDetails: details.DlVars, filename: string): 
     if (dlDetails.isDownloadAllowed === 1) return true;
     if (!filename) return true;
 
-    var isAllowed = filenameUtils.isFilenameAllowed(filename);
+    const isAllowed = filenameUtils.isFilenameAllowed(filename);
     if (isAllowed === 0) {
       dlDetails.isDownloadAllowed = 0;
       if (!dlDetails.isUploading) {
@@ -272,11 +272,11 @@ function handleDisallowedFilename(dlDetails: details.DlVars, filename: string): 
 }
 
 function prepDownload(msg: TelegramBot.Message, match: string, isTar: boolean): void {
-  var dlDir = uuid();
+  const dlDir = uuid();
   ariaTools.addUri(match, dlDir, (err, gid) => {
     dlManager.addDownload(gid, dlDir, msg, isTar);
     if (err) {
-      var message = `Failed to start the download. ${err.message}`;
+      const message = `Failed to start the download. ${err.message}`;
       console.error(message);
       cleanupDownload(gid, message);
     } else {
@@ -294,7 +294,7 @@ function prepDownload(msg: TelegramBot.Message, match: string, isTar: boolean): 
  * Sends a single status message for all active and queued downloads.
  */
 function sendStatusMessage(msg: TelegramBot.Message, keepForever?: boolean): Promise<void> {
-  var lastStatus = dlManager.getStatus(msg.chat.id);
+  const lastStatus = dlManager.getStatus(msg.chat.id);
 
   if (lastStatus) {
     msgTools.deleteMsg(bot, lastStatus.msg);
@@ -310,7 +310,7 @@ function sendStatusMessage(msg: TelegramBot.Message, keepForever?: boolean): Pro
             resolve();
           });
         } else {
-          var ttl = 60000;
+          const ttl = 60000;
           msgTools.sendMessage(bot, msg, res.message, ttl, message => {
             dlManager.addStatus(message, res.message);
             setTimeout(() => {
@@ -330,7 +330,7 @@ function sendStatusMessage(msg: TelegramBot.Message, keepForever?: boolean): Pro
 function updateAllStatus(): void {
   downloadUtils.getStatusMessage()
     .then(res => {
-      var staleStatusReply = 'ETELEGRAM: 400 Bad Request: message to edit not found';
+      const staleStatusReply = 'ETELEGRAM: 400 Bad Request: message to edit not found';
 
       if (res.singleStatuses) {
         res.singleStatuses.forEach(status => {
@@ -385,7 +385,7 @@ function cleanupDownload(gid: string, message: string, url?: string, dlDetails?:
     dlDetails = dlManager.getDownloadByGid(gid);
   }
   if (dlDetails) {
-    var wasCancelAlled = false;
+    let wasCancelAlled = false;
     dlManager.forEachCancelledDl(dlDetails => {
       if (dlDetails.gid === gid) {
         wasCancelAlled = true;
@@ -419,7 +419,7 @@ function cleanupDownload(gid: string, message: string, url?: string, dlDetails?:
 }
 
 function ariaOnDownloadStart(gid: string, retry: number): void {
-  var dlDetails = dlManager.getDownloadByGid(gid);
+  const dlDetails = dlManager.getDownloadByGid(gid);
   if (dlDetails) {
     dlManager.moveDownloadToActive(dlDetails);
     console.log(`${gid}: Started. Dir: ${dlDetails.downloadDir}.`);
@@ -444,10 +444,10 @@ function ariaOnDownloadStart(gid: string, retry: number): void {
 }
 
 function ariaOnDownloadStop(gid: string, retry: number): void {
-  var dlDetails = dlManager.getDownloadByGid(gid);
+  const dlDetails = dlManager.getDownloadByGid(gid);
   if (dlDetails) {
     console.log(`${gid}: Stopped`);
-    var message = 'Download stopped.';
+    let message = 'Download stopped.';
     if (dlDetails.isDownloadAllowed === 0) {
       message += ' Blacklisted file name.';
     }
@@ -461,13 +461,13 @@ function ariaOnDownloadStop(gid: string, retry: number): void {
 }
 
 function ariaOnDownloadComplete(gid: string, retry: number): void {
-  var dlDetails = dlManager.getDownloadByGid(gid);
+  const dlDetails = dlManager.getDownloadByGid(gid);
   if (dlDetails) {
 
     ariaTools.getAriaFilePath(gid, (err, file) => {
       if (err) {
         console.error(`onDownloadComplete: Error getting file path for ${gid}. ${err}`);
-        var message = 'Upload failed. Could not get downloaded files.';
+        const message = 'Upload failed. Could not get downloaded files.';
         cleanupDownload(gid, message);
         return;
       }
@@ -476,18 +476,18 @@ function ariaOnDownloadComplete(gid: string, retry: number): void {
         ariaTools.getFileSize(gid, (err, size) => {
           if (err) {
             console.error(`onDownloadComplete: Error getting file size for ${gid}. ${err}`);
-            var message = 'Upload failed. Could not get file size.';
+            const message = 'Upload failed. Could not get file size.';
             cleanupDownload(gid, message);
             return;
           }
 
-          var filename = filenameUtils.getFileNameFromPath(file, null);
+          const filename = filenameUtils.getFileNameFromPath(file, null);
           dlDetails.isUploading = true;
           if (handleDisallowedFilename(dlDetails, filename)) {
             console.log(`${gid}: Completed. Filename: ${filename}. Starting upload.`);
             ariaTools.uploadFile(dlDetails, file, size, driveUploadCompleteCallback);
           } else {
-            var reason = 'Upload failed. Blacklisted file name.';
+            const reason = 'Upload failed. Blacklisted file name.';
             console.log(`${gid}: Blacklisted. Filename: ${filename}.`);
             cleanupDownload(gid, reason);
           }
@@ -496,14 +496,14 @@ function ariaOnDownloadComplete(gid: string, retry: number): void {
         ariaTools.isDownloadMetadata(gid, (err, isMetadata, newGid) => {
           if (err) {
             console.error(`${gid}: onDownloadComplete: Failed to check if it was a metadata download: ${err}`);
-            var message = 'Upload failed. Could not check if the file is metadata.';
+            const message = 'Upload failed. Could not check if the file is metadata.';
             cleanupDownload(gid, message);
           } else if (isMetadata) {
             console.log(`${gid} Changed to ${newGid}`);
             dlManager.changeDownloadGid(gid, newGid);
           } else {
             console.error('onDownloadComplete: No files - not metadata.');
-            var reason = 'Upload failed. Could not get files.';
+            const reason = 'Upload failed. Could not get files.';
             cleanupDownload(gid, reason);
           }
         });
@@ -518,10 +518,10 @@ function ariaOnDownloadComplete(gid: string, retry: number): void {
 }
 
 function ariaOnDownloadError(gid: string, retry: number): void {
-  var dlDetails = dlManager.getDownloadByGid(gid);
+  const dlDetails = dlManager.getDownloadByGid(gid);
   if (dlDetails) {
     ariaTools.getError(gid, (err, res) => {
-      var message: string;
+      let message: string;
       if (err) {
         message = 'Failed to download.';
         console.error(`${gid}: failed. Failed to get the error message. ${err}`);
@@ -562,16 +562,16 @@ function initAria2(): void {
 function driveUploadCompleteCallback(err: string, gid: string, url: string, filePath: string,
   fileName: string, fileSize: number, isFolder: boolean): void {
 
-  var finalMessage;
+  let finalMessage;
   if (err) {
-    var message = err;
+    const message = err;
     console.error(`${gid}: Failed to upload - ${filePath}: ${message}`);
     finalMessage = `Failed to upload <code>${fileName}</code> to Drive. ${message}`;
     cleanupDownload(gid, finalMessage);
   } else {
     console.log(`${gid}: Uploaded `);
     if (fileSize) {
-      var fileSizeStr = downloadUtils.formatSize(fileSize);
+      const fileSizeStr = downloadUtils.formatSize(fileSize);
       finalMessage = `<a href='${url}'>${fileName}</a> (${fileSizeStr})`;
     } else {
       finalMessage = `<a href='${url}'>${fileName}</a>`;
