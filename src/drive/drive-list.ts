@@ -40,12 +40,16 @@ export function listFiles (fileName:string, callback:(err:string, message:string
   });
 }
 
+function escapeDriveQueryString(str: string): string {
+  return str.replace(/\\/g, '\\\\').replace(/'/g, '\\\'');
+}
+
 export function generateSearchQuery (fileName:string, parent:string): string {
-  const safeFileName = fileName.replace(/\\/g, '\\\\').replace(/'/g, '\\\'');
-  const safeParent = parent.replace(/\\/g, '\\\\').replace(/'/g, '\\\'');
+  const safeFileName = escapeDriveQueryString(fileName);
+  const safeParent = escapeDriveQueryString(parent);
 
   var q = '\'' + safeParent + '\' in parents and (';
-  if (safeFileName.indexOf(' ') > -1) {
+  if (fileName.indexOf(' ') > -1) {
     let currentFileName = safeFileName;
     for (var i = 0; i < 4; i++) {
       q += 'name contains \'' + currentFileName + '\' ';

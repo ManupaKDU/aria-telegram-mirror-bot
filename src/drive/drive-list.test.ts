@@ -35,6 +35,11 @@ describe('generateSearchQuery', () => {
     const query = generateSearchQuery('malicious\' OR name contains \'test\\', 'parent\'\\dir');
     expect(query).toBe('\'parent\\\'\\\\dir\' in parents and (name contains \'malicious\\\' OR name contains \\\'test\\\\\' or name contains \'malicious\\\'.OR.name.contains.\\\'test\\\\\' or name contains \'malicious\\\'-OR-name-contains-\\\'test\\\\\' or name contains \'malicious\\\'_OR_name_contains_\\\'test\\\\\' )');
   });
+
+  it('should escape single quotes and backslashes for filenames without spaces', () => {
+    const query = generateSearchQuery("file'name\\", "parent'\\dir");
+    expect(query).toBe("'parent\\'\\\\dir' in parents and (name contains 'file\\'name\\\\')");
+  });
 });
 
 describe('generateFilesListMessage', () => {
