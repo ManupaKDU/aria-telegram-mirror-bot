@@ -37,7 +37,7 @@ jest.mock('fs', () => {
     })
   };
 });
-const fs = require('fs');
+
 
 describe('uploadChunk', () => {
   let uploadGoogleDriveFile;
