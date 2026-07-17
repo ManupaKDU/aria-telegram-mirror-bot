@@ -55,7 +55,7 @@ export function getAriaFilePath(gid: string, callback: (err: string, file: strin
     if (err) {
       callback(err.message, null);
     } else {
-      var filePath = filenameUtils.findAriaFilePath(files);
+      const filePath = filenameUtils.findAriaFilePath(files);
       if (filePath) {
         callback(null, filePath.path);
       } else {
@@ -80,12 +80,12 @@ export function getStatus(dlDetails: DlVars,
       if (err) {
         callback(err.message, null, null, null);
       } else if (res.status === 'active') {
-        var statusMessage = downloadUtils.generateStatusMessage(parseFloat(res.totalLength),
+        const statusMessage = downloadUtils.generateStatusMessage(parseFloat(res.totalLength),
           parseFloat(res.completedLength), parseFloat(res.downloadSpeed), res.files, false);
         callback(null, statusMessage.message, statusMessage.filename, statusMessage.filesize);
       } else if (dlDetails.isUploading) {
-        var downloadSpeed: number;
-        var time = new Date().getTime();
+        let downloadSpeed: number;
+        const time = new Date().getTime();
         if (!dlDetails.lastUploadCheckTimestamp) {
           downloadSpeed = 0;
         } else {
@@ -95,13 +95,13 @@ export function getStatus(dlDetails: DlVars,
         dlDetails.uploadedBytesLast = dlDetails.uploadedBytes;
         dlDetails.lastUploadCheckTimestamp = time;
 
-        var statusMessage = downloadUtils.generateStatusMessage(parseFloat(res.totalLength),
+        const statusMessage = downloadUtils.generateStatusMessage(parseFloat(res.totalLength),
           dlDetails.uploadedBytes, downloadSpeed, res.files, true);
         callback(null, statusMessage.message, statusMessage.filename, statusMessage.filesize);
       } else {
-        var filePath = filenameUtils.findAriaFilePath(res['files']);
-        var filename = filenameUtils.getFileNameFromPath(filePath.path, filePath.inputPath, filePath.downloadUri);
-        var message;
+        const filePath = filenameUtils.findAriaFilePath(res['files']);
+        const filename = filenameUtils.getFileNameFromPath(filePath.path, filePath.inputPath, filePath.downloadUri);
+        let message;
         if (res.status === 'waiting') {
           message = `<i>${filename}</i> - Queued`;
         } else {
@@ -165,8 +165,8 @@ interface DriveUploadCompleteCallback {
 export function uploadFile(dlDetails: DlVars, filePath: string, fileSize: number, callback: DriveUploadCompleteCallback): void {
 
   dlDetails.isUploading = true;
-  var fileName = filenameUtils.getFileNameFromPath(filePath, null);
-  var realFilePath = filenameUtils.getActualDownloadPath(filePath);
+  const fileName = filenameUtils.getFileNameFromPath(filePath, null);
+  const realFilePath = filenameUtils.getActualDownloadPath(filePath);
   if (dlDetails.isTar) {
     if (filePath === realFilePath) {
       // If there is only one file, do not archive
@@ -181,7 +181,7 @@ export function uploadFile(dlDetails: DlVars, filePath: string, fileSize: number
         }
         if (res['free'] > fileSize) {
           console.log('Starting archival');
-          var destName = fileName + '.tar';
+          const destName = fileName + '.tar';
           tar.archive(realFilePath, destName, (err: string, size: number) => {
             if (err) {
               callback(err, dlDetails.gid, null, null, null, null, false);
