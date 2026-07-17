@@ -63,7 +63,7 @@ function walkSingleDir(dlDetails: DlVars, path: string, files: string[], parent:
     return;
   }
 
-  var uploadNext = function (position: number): void {
+  const uploadNext = function (position: number): void {
     processFileOrDir(dlDetails, path + '/' + files[position], parent, (err: string) => {
       if (err) {
         callback(err);
@@ -100,7 +100,7 @@ function processFileOrDir(dlDetails: DlVars, path: string, parent: string, callb
         }
       });
     } else {
-      var mimeType = mime.lookup(path);
+      let mimeType = mime.lookup(path);
       if (!mimeType) {
         mimeType = 'application/octet-stream';
       }
