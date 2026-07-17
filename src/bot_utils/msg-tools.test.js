@@ -1,13 +1,50 @@
-jest.mock('@src/.constants', () => ({}), { virtual: true });
+jest.mock('../../src/.constants', () => ({}), { virtual: true });
 jest.mock('node-telegram-bot-api', () => ({}), { virtual: true });
-jest.mock('@src/download_tools/aria-tools', () => ({}), { virtual: true });
-jest.mock('@src/dl_model/dl-manager', () => ({
+jest.mock('../../src/download_tools/aria-tools', () => ({}), { virtual: true });
+jest.mock('../../src/dl_model/dl-manager', () => ({
   DlManager: {
     getInstance: jest.fn(() => ({}))
   }
 }), { virtual: true });
 
-const { sleep, deleteMsg, sendUnauthorizedMessage, editMessage } = require('@src/bot_utils/msg-tools');
+const { sleep, deleteMsg, sendUnauthorizedMessage, editMessage, sendMessage } = require('@src/bot_utils/msg-tools');
+
+describe('sendMessage', () => {
+  let consoleErrorSpy;
+
+  beforeEach(() => {
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('should catch and log error when bot.sendMessage rejects', async () => {
+    const mockBot = {
+      sendMessage: jest.fn().mockRejectedValue(new Error('test error'))
+    };
+    const mockMsg = {
+      chat: { id: 123 },
+      message_id: 456
+    };
+    const text = 'test message';
+
+    sendMessage(mockBot, mockMsg, text);
+
+    expect(mockBot.sendMessage).toHaveBeenCalledWith(123, text, {
+      reply_to_message_id: 456,
+      parse_mode: 'HTML'
+    });
+
+    // Flush microtasks for bot.sendMessage rejection
+    await Promise.resolve();
+    // Flush microtasks for the .catch handler in the source code to execute
+    await Promise.resolve();
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith('sendMessage error: test error');
+  });
+});
 
 describe('sendUnauthorizedMessage', () => {
   let consoleErrorSpy;
