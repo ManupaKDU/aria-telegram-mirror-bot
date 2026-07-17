@@ -13,6 +13,7 @@ const TOKEN_PATH = './credentials.json';
 let cachedClient: OAuth2Client | null = null;
 let isInitializing = false;
 let authCallbacks: Array<(err: string, client: OAuth2Client) => void> = [];
+let cachedClientSecrets: any = null;
 
 export function call(callback: (err: string, client: OAuth2Client) => void): void {
   if (cachedClient) {
@@ -27,6 +28,19 @@ export function call(callback: (err: string, client: OAuth2Client) => void): voi
 
   isInitializing = true;
 
+  if (cachedClientSecrets) {
+    authorize(cachedClientSecrets, (authErr: string, client: OAuth2Client) => {
+      isInitializing = false;
+      if (!authErr && client) {
+        cachedClient = client;
+      }
+      const callbacks = authCallbacks;
+      authCallbacks = [];
+      callbacks.forEach(cb => cb(authErr, client));
+    });
+    return;
+  }
+
   // Load client secrets from a local file.
   fs.readFile('./client_secret.json', 'utf8', (err, content) => {
     if (err) {
@@ -36,7 +50,8 @@ export function call(callback: (err: string, client: OAuth2Client) => void): voi
       authCallbacks = [];
       callbacks.forEach(cb => cb(err.message, null));
     } else {
-      authorize(JSON.parse(content), (authErr: string, client: OAuth2Client) => {
+      cachedClientSecrets = JSON.parse(content);
+      authorize(cachedClientSecrets, (authErr: string, client: OAuth2Client) => {
         isInitializing = false;
         if (!authErr && client) {
           cachedClient = client;
