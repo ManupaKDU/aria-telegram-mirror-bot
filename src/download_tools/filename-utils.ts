@@ -19,8 +19,8 @@ interface FilePath {
  * @returns {string} The name of the download, or null if it is a torrent metadata.
  */
 export function findAriaFilePath(files: any[]): FilePath {
-  var filePath = files[0]['path'];
-  var uri = files[0].uris[0] ? files[0].uris[0].uri : null;
+  const filePath = files[0]['path'];
+  const uri = files[0].uris[0] ? files[0].uris[0].uri : null;
 
   if (filePath.startsWith(constants.ARIA_DOWNLOAD_LOCATION)) {
     if (filePath.substring(filePath.lastIndexOf('.') + 1) !== 'torrent') {
@@ -50,12 +50,12 @@ export function getFileNameFromPath(filePath: string, inputPath: string, downloa
   }
 
   // +2 because there are two /'s, after ARIA_DOWNLOAD_LOCATION and after the 36 character subdir
-  var baseDirLength = constants.ARIA_DOWNLOAD_LOCATION.length + 38;
-  var nameEndIndex = filePath.indexOf('/', baseDirLength);
+  const baseDirLength = constants.ARIA_DOWNLOAD_LOCATION.length + 38;
+  let nameEndIndex = filePath.indexOf('/', baseDirLength);
   if (nameEndIndex === -1) {
     nameEndIndex = filePath.length;
   }
-  var fileName = filePath.substring(baseDirLength, nameEndIndex);
+  const fileName = filePath.substring(baseDirLength, nameEndIndex);
 
   if (!fileName) {// This really shouldn't be possible
     return getFilenameFromUri(inputPath, downloadUri);
@@ -73,12 +73,12 @@ export function getFileNameFromPath(filePath: string, inputPath: string, downloa
  */
 export function getActualDownloadPath(filePath: string): string {
   // +2 because there are two /'s, after ARIA_DOWNLOAD_LOCATION and after the 36 character subdir
-  var baseDirLength = constants.ARIA_DOWNLOAD_LOCATION.length + 38;
-  var nameEndIndex = filePath.indexOf('/', baseDirLength);
+  const baseDirLength = constants.ARIA_DOWNLOAD_LOCATION.length + 38;
+  let nameEndIndex = filePath.indexOf('/', baseDirLength);
   if (nameEndIndex === -1) {
     nameEndIndex = filePath.length;
   }
-  var fileName = filePath.substring(0, nameEndIndex);
+  const fileName = filePath.substring(0, nameEndIndex);
   return fileName;
 }
 
@@ -111,7 +111,7 @@ export function isFilenameAllowed(filename: string): number {
   if (filename === TYPE_METADATA) return -1;
 
   const lowerFilename = filename.toLowerCase();
-  for (var i = 0; i < constants.ARIA_FILTERED_FILENAMES.length; i++) {
+  for (let i = 0; i < constants.ARIA_FILTERED_FILENAMES.length; i++) {
     if (lowerFilename.includes(constants.ARIA_FILTERED_FILENAMES[i].toLowerCase())) return 0;
   }
   return 1;
