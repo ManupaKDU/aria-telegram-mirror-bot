@@ -3,14 +3,14 @@ import fs = require('fs');
 import path = require('path');
 
 export function archive(srcPath: string, destName: string, callback: (err: string, size: number) => void): void {
-  var dlDirPath = srcPath.substring(0, srcPath.lastIndexOf('/'));
-  var writeStream = fs.createWriteStream(`${dlDirPath}/${path.basename(destName)}`);
-  var targetDirName = `${srcPath.substring(srcPath.lastIndexOf('/') + 1)}`;
-  var size = 0;
+  const dlDirPath = srcPath.substring(0, srcPath.lastIndexOf('/'));
+  const writeStream = fs.createWriteStream(`${dlDirPath}/${path.basename(destName)}`);
+  const targetDirName = `${srcPath.substring(srcPath.lastIndexOf('/') + 1)}`;
+  let size = 0;
   writeStream.on('close', () => callback(null, size));
   writeStream.on('error', (err: Error) => callback(err.message, size));
 
-  var stream = tar.c(
+  const stream = tar.c(
     {
       // @ts-ignore Unknown property error
       maxReadSize: 163840,
