@@ -6,7 +6,7 @@ import msgTools = require('../bot_utils/msg-tools.js');
 import TelegramBot = require('node-telegram-bot-api');
 import details = require('../dl_model/detail');
 import dlm = require('../dl_model/dl-manager');
-var dlManager = dlm.DlManager.getInstance();
+const dlManager = dlm.DlManager.getInstance();
 
 const PROGRESS_MAX_SIZE = Math.floor(100 / 8);
 const PROGRESS_INCOMPLETE = ['▏', '▎', '▍', '▌', '▋', '▊', '▉'];
@@ -24,10 +24,10 @@ export function deleteDownloadedFile(subdirName: string): void {
 function downloadETA(totalLength: number, completedLength: number, speed: number): string {
   if (speed === 0)
     return '-';
-  var time = (totalLength - completedLength) / speed;
-  var seconds = Math.floor(time % 60);
-  var minutes = Math.floor((time / 60) % 60);
-  var hours = Math.floor(time / 3600);
+  const time = (totalLength - completedLength) / speed;
+  const seconds = Math.floor(time % 60);
+  const minutes = Math.floor((time / 60) % 60);
+  const hours = Math.floor(time / 3600);
 
   if (hours === 0) {
     if (minutes === 0) {
@@ -48,7 +48,7 @@ interface StatusSingle {
 
 function getSingleStatus(dlDetails: details.DlVars, msg?: TelegramBot.Message): Promise<StatusSingle> {
   return new Promise(resolve => {
-    var authorizedCode;
+    let authorizedCode;
     if (msg) {
       authorizedCode = msgTools.isAuthorized(msg);
     } else {
@@ -85,16 +85,16 @@ interface StatusAll {
  * Get a single status message for all active and queued downloads.
  */
 export function getStatusMessage(): Promise<StatusAll> {
-  var singleStatusArr: Promise<StatusSingle>[] = [];
+  const singleStatusArr: Promise<StatusSingle>[] = [];
 
   dlManager.forEachDownload(dlDetails => {
     singleStatusArr.push(getSingleStatus(dlDetails));
   });
 
-  var result: Promise<StatusAll> = Promise.all(singleStatusArr)
+  const result: Promise<StatusAll> = Promise.all(singleStatusArr)
     .then(statusArr => {
       if (statusArr && statusArr.length > 0) {
-        var message: string;
+        let message: string;
         statusArr.sort((a, b) => (a.dlDetails && b.dlDetails) ? (a.dlDetails.startTime - b.dlDetails.startTime) : 1)
           .forEach((value, index) => {
             if (index > 0) {
@@ -133,21 +133,21 @@ export function getStatusMessage(): Promise<StatusAll> {
  */
 export function generateStatusMessage(totalLength: number, completedLength: number, speed: number,
   files: any[], isUploading: boolean): StatusMessage {
-  var filePath = filenameUtils.findAriaFilePath(files);
-  var fileName = filenameUtils.getFileNameFromPath(filePath.path, filePath.inputPath, filePath.downloadUri);
-  var progress;
+  const filePath = filenameUtils.findAriaFilePath(files);
+  const fileName = filenameUtils.getFileNameFromPath(filePath.path, filePath.inputPath, filePath.downloadUri);
+  let progress;
   if (totalLength === 0) {
     progress = 0;
   } else {
     progress = Math.round(completedLength * 100 / totalLength);
   }
-  var totalLengthStr = formatSize(totalLength);
-  var progressString = generateProgress(progress);
-  var speedStr = formatSize(speed);
-  var eta = downloadETA(totalLength, completedLength, speed);
-  var type = isUploading ? 'Uploading' : 'Filename';
-  var message = `<b>${type}</b>: <code>${fileName}</code>\n<b>Size</b>: <code>${totalLengthStr}</code>\n<b>Progress</b>: <code>${progressString}</code>\n<b>Speed</b>: <code>${speedStr}ps</code>\n<b>ETA</b>: <code>${eta}</code>`;
-  var status = {
+  const totalLengthStr = formatSize(totalLength);
+  const progressString = generateProgress(progress);
+  const speedStr = formatSize(speed);
+  const eta = downloadETA(totalLength, completedLength, speed);
+  const type = isUploading ? 'Uploading' : 'Filename';
+  const message = `<b>${type}</b>: <code>${fileName}</code>\n<b>Size</b>: <code>${totalLengthStr}</code>\n<b>Progress</b>: <code>${progressString}</code>\n<b>Speed</b>: <code>${speedStr}ps</code>\n<b>ETA</b>: <code>${eta}</code>`;
+  const status = {
     message: message,
     filename: fileName,
     filesize: totalLengthStr
@@ -163,9 +163,9 @@ export interface StatusMessage {
 
 function generateProgress(p: number): string {
   p = Math.min(Math.max(p, 0), 100);
-  var str = '[';
-  var cFull = Math.floor(p / 8);
-  var cPart = p % 8 - 1;
+  let str = '[';
+  const cFull = Math.floor(p / 8);
+  const cPart = p % 8 - 1;
   str += '█'.repeat(cFull);
   if (cPart >= 0) {
     str += PROGRESS_INCOMPLETE[cPart];
