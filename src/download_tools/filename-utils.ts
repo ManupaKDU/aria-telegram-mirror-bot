@@ -106,13 +106,19 @@ function getFilenameFromUri(path: string, uri: string): string {
 
 }
 
+let lowercasedFilteredFilenames: string[] | null = null;
+
 export function isFilenameAllowed(filename: string): number {
   if (!constants.ARIA_FILTERED_FILENAMES) return 1;
   if (filename === TYPE_METADATA) return -1;
 
+  if (lowercasedFilteredFilenames === null) {
+    lowercasedFilteredFilenames = constants.ARIA_FILTERED_FILENAMES.map((f: string) => f.toLowerCase());
+  }
+
   const lowerFilename = filename.toLowerCase();
-  for (let i = 0; i < constants.ARIA_FILTERED_FILENAMES.length; i++) {
-    if (lowerFilename.includes(constants.ARIA_FILTERED_FILENAMES[i].toLowerCase())) return 0;
+  if (lowercasedFilteredFilenames.some((filtered: string) => lowerFilename.includes(filtered))) {
+    return 0;
   }
   return 1;
 }
